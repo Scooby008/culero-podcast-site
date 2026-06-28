@@ -168,7 +168,7 @@ export default function Intro({ session, role, songs, setSongs, currentIndex, se
         }
       </div>
 
-      {role === 'admin' && (
+      {loggedIn && (
         <div className="card">
           <h3>Add a track</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }} className="upload-grid">

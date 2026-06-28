@@ -5,12 +5,11 @@ import NewReleases from './pages/NewReleases'
 import Radio from './pages/Radio'
 import Comments from './pages/Comments'
 
-const SUPABASE_URL = "https://kxybghfxcfzcxfvsacaj.supabase.co"
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4eWJnaGZ4Y2Z6Y3hmdnNhY2FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDI1NDgsImV4cCI6MjA5ODA3ODU0OH0.I_sUe_UUpViPjE27xc01zFvILZBp8Rv18GY7bZfM7qE"
-const ADMIN_EMAIL = "chrissalinas2005@gmail.com"
-const USER_EMAIL = "user@theculeropodcast.com"
+export const SUPABASE_URL = "https://kxybghfxcfzcxfvsacaj.supabase.co"
+export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4eWJnaGZ4Y2Z6Y3hmdnNhY2FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDI1NDgsImV4cCI6MjA5ODA3ODU0OH0.I_sUe_UUpViPjE27xc01zFvILZBp8Rv18GY7bZfM7qE"
 
-export { SUPABASE_URL, SUPABASE_ANON_KEY, ADMIN_EMAIL, USER_EMAIL }
+const VALID_USER = 'Chris'
+const VALID_PASS = 'Music'
 
 const TABS = [
   { id: 'intro', label: 'Intro & Player' },
@@ -19,40 +18,66 @@ const TABS = [
   { id: 'comments', label: 'Comments' },
 ]
 
+const RecordLogo = () => (
+  <svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="rb" cx="50%" cy="45%" r="50%">
+        <stop offset="0%" stopColor="#2c2c3e"/>
+        <stop offset="65%" stopColor="#14141e"/>
+        <stop offset="100%" stopColor="#050508"/>
+      </radialGradient>
+      <radialGradient id="rs" cx="38%" cy="32%" r="45%">
+        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22"/>
+        <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+      </radialGradient>
+      <radialGradient id="rl" cx="38%" cy="35%" r="55%">
+        <stop offset="0%" stopColor="#f5d060"/>
+        <stop offset="55%" stopColor="#d8b13a"/>
+        <stop offset="100%" stopColor="#8f6f1c"/>
+      </radialGradient>
+      <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#00f6ff" stopOpacity="0.2"/>
+        <stop offset="100%" stopColor="#00f6ff" stopOpacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="50" cy="50" r="50" fill="url(#rg)"/>
+    <circle cx="50" cy="50" r="46" fill="url(#rb)"/>
+    <circle cx="50" cy="50" r="44" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="1"/>
+    <circle cx="50" cy="50" r="38" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="0.8"/>
+    <circle cx="50" cy="50" r="32" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="0.8"/>
+    <circle cx="50" cy="50" r="26" fill="none" stroke="#ffffff" strokeOpacity="0.04" strokeWidth="0.8"/>
+    <circle cx="50" cy="50" r="46" fill="url(#rs)"/>
+    <circle cx="50" cy="50" r="18" fill="url(#rl)"/>
+    <text x="50" y="48" textAnchor="middle" fontFamily="Courier New, monospace" fontSize="5.5" fontWeight="700" fill="#3a1f00" letterSpacing="1">CULERO</text>
+    <text x="50" y="55" textAnchor="middle" fontFamily="Courier New, monospace" fontSize="3.8" fill="#5a3200" letterSpacing="0.8">PODCAST</text>
+    <circle cx="50" cy="50" r="3" fill="#050508"/>
+  </svg>
+)
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('intro')
-  const [session, setSession] = useState(null)
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [loginEmail, setLoginEmail] = useState(ADMIN_EMAIL)
-  const [loginPassword, setLoginPassword] = useState('')
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [songs, setSongs] = useState([])
   const [currentIndex, setCurrentIndex] = useState(-1)
 
-  function roleForEmail(email) {
-    if (email === ADMIN_EMAIL) return 'admin'
-    if (email === USER_EMAIL) return 'user'
-    return null
+  function handleLogin() {
+    if (username === VALID_USER && password === VALID_PASS) {
+      setLoggedIn(true)
+      setShowModal(false)
+      setLoginError('')
+      setUsername('')
+      setPassword('')
+    } else {
+      setLoginError('Invalid username or password.')
+    }
   }
 
-  const role = session ? roleForEmail(session.user.email) : null
-
-  async function handleLogin() {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    const { data, error } = await sb.auth.signInWithPassword({ email: loginEmail, password: loginPassword })
-    if (error) { setLoginError('Incorrect password.'); return }
-    setSession(data.session)
-    setShowLoginModal(false)
-    setLoginError('')
-    setLoginPassword('')
-  }
-
-  async function handleLogout() {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    await sb.auth.signOut()
-    setSession(null)
+  function handleLogout() {
+    setLoggedIn(false)
   }
 
   return (
@@ -63,25 +88,28 @@ export default function App() {
         background: 'rgba(10,12,20,0.85)',
         borderBottom: '1px solid var(--border)',
       }}>
-        <h1 style={{
-          margin: 0, fontSize: '1.4rem', fontWeight: 700,
-          color: 'var(--accent-2)', letterSpacing: 3,
-          textTransform: 'uppercase',
-          textShadow: '0 0 12px var(--accent-2), 0 0 24px var(--accent)',
-          borderLeft: '4px solid var(--accent-3)',
-          paddingLeft: 12,
-        }}>
-          The Culero Podcast
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <RecordLogo />
+          <h1 style={{
+            margin: 0, fontSize: '1.4rem', fontWeight: 700,
+            color: 'var(--accent-2)', letterSpacing: 3,
+            textTransform: 'uppercase',
+            textShadow: '0 0 12px var(--accent-2), 0 0 24px var(--accent)',
+            borderLeft: '4px solid var(--accent-3)',
+            paddingLeft: 12,
+          }}>
+            The Culero Podcast
+          </h1>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-            {role === 'admin' ? 'Logged in as admin' : role === 'user' ? 'Logged in as user' : 'Not logged in'}
-          </span>
-          {!session && <>
-            <button onClick={() => { setLoginEmail(ADMIN_EMAIL); setShowLoginModal(true) }}>Admin Login</button>
-            <button onClick={() => { setLoginEmail(USER_EMAIL); setShowLoginModal(true) }}>User Login</button>
-          </>}
-          {session && <button onClick={handleLogout}>Log out</button>}
+          {loggedIn ? (
+            <>
+              <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Signed in</span>
+              <button onClick={handleLogout}>Sign out</button>
+            </>
+          ) : (
+            <button onClick={() => { setShowModal(true); setLoginError('') }}>Sign in</button>
+          )}
         </div>
       </header>
 
@@ -108,17 +136,17 @@ export default function App() {
       <main style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
         {activeTab === 'intro' && (
           <Intro
-            session={session} role={role}
+            loggedIn={loggedIn}
             songs={songs} setSongs={setSongs}
             currentIndex={currentIndex} setCurrentIndex={setCurrentIndex}
           />
         )}
         {activeTab === 'new-releases' && <NewReleases songs={songs} setCurrentIndex={setCurrentIndex} setActiveTab={setActiveTab} />}
         {activeTab === 'radio' && <Radio />}
-        {activeTab === 'comments' && <Comments session={session} />}
+        {activeTab === 'comments' && <Comments />}
       </main>
 
-      {showLoginModal && (
+      {showModal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(5,5,15,0.85)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
@@ -128,19 +156,28 @@ export default function App() {
             borderRadius: 12, padding: 24, width: 320,
             boxShadow: '0 0 40px rgba(0,246,255,0.25)',
           }}>
-            <h3 style={{ marginTop: 0, color: 'var(--accent-2)', marginBottom: 16 }}>Admin Login</h3>
-            <div style={{ marginBottom: 14 }}>
+            <h3 style={{ marginTop: 0, color: 'var(--accent-2)', marginBottom: 16 }}>Sign in</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
               <input
-                type="password" placeholder="Password" value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
+                placeholder="Username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                style={{ width: '100%' }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
                 style={{ width: '100%' }}
               />
             </div>
             {loginError && <div className="status-msg error" style={{ marginBottom: 10 }}>{loginError}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button onClick={() => { setShowLoginModal(false); setLoginError('') }}>Cancel</button>
-              <button className="primary" onClick={handleLogin}>Log in</button>
+              <button onClick={() => { setShowModal(false); setLoginError(''); setUsername(''); setPassword('') }}>Cancel</button>
+              <button className="primary" onClick={handleLogin}>Sign in</button>
             </div>
           </div>
         </div>
