@@ -39,7 +39,7 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <RecordLogo size={32} />
           <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.5px', color: 'var(--black)' }}>
-            CULERO
+            CULERO PODCAST
           </span>
         </div>
         <nav style={{ display: 'flex', gap: 4 }}>
