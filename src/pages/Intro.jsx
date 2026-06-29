@@ -104,7 +104,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           </div>
         </div>
         <div style={{ opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>
-          <h1 style={{ fontSize: 72, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: 'var(--black)', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1.1, color: 'var(--black)', marginBottom: 24 }}>
             Music is the shorthand<br />of emotion.
           </h1>
           <div style={{ fontSize: 13, color: 'var(--gray-3)', fontStyle: 'italic', marginTop: 12, marginBottom: 0 }}>— Tolstoy</div>
