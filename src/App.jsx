@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './index.css'
+import RecordLogo from './components/RecordLogo'
 import Intro from './pages/Intro'
 import NewReleases from './pages/NewReleases'
 import Radio from './pages/Radio'
@@ -10,107 +11,75 @@ export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
 const TABS = [
-  { id: 'intro', label: 'Intro & Player' },
+  { id: 'intro', label: 'Listen' },
   { id: 'new-releases', label: 'New Releases' },
   { id: 'radio', label: 'Radio' },
   { id: 'comments', label: 'Comments' },
 ]
 
-const RecordLogo = () => (
-  <svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="rb" cx="50%" cy="45%" r="50%">
-        <stop offset="0%" stopColor="#2c2c3e"/>
-        <stop offset="65%" stopColor="#14141e"/>
-        <stop offset="100%" stopColor="#050508"/>
-      </radialGradient>
-      <radialGradient id="rs" cx="38%" cy="32%" r="45%">
-        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22"/>
-        <stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
-      </radialGradient>
-      <radialGradient id="rl" cx="38%" cy="35%" r="55%">
-        <stop offset="0%" stopColor="#f5d060"/>
-        <stop offset="55%" stopColor="#d8b13a"/>
-        <stop offset="100%" stopColor="#8f6f1c"/>
-      </radialGradient>
-      <radialGradient id="rg" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#00f6ff" stopOpacity="0.2"/>
-        <stop offset="100%" stopColor="#00f6ff" stopOpacity="0"/>
-      </radialGradient>
-    </defs>
-    <circle cx="50" cy="50" r="50" fill="url(#rg)"/>
-    <circle cx="50" cy="50" r="46" fill="url(#rb)"/>
-    <circle cx="50" cy="50" r="44" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="1"/>
-    <circle cx="50" cy="50" r="38" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="0.8"/>
-    <circle cx="50" cy="50" r="32" fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="0.8"/>
-    <circle cx="50" cy="50" r="26" fill="none" stroke="#ffffff" strokeOpacity="0.04" strokeWidth="0.8"/>
-    <circle cx="50" cy="50" r="46" fill="url(#rs)"/>
-    <circle cx="50" cy="50" r="18" fill="url(#rl)"/>
-    <text x="50" y="48" textAnchor="middle" fontFamily="Courier New, monospace" fontSize="5.5" fontWeight="700" fill="#3a1f00" letterSpacing="1">CULERO</text>
-    <text x="50" y="55" textAnchor="middle" fontFamily="Courier New, monospace" fontSize="3.8" fill="#5a3200" letterSpacing="0.8">PODCAST</text>
-    <circle cx="50" cy="50" r="3" fill="#050508"/>
-  </svg>
-)
+const headerStyle = {
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+  padding: '0 40px', height: 64,
+  background: 'rgba(0,0,0,0.92)',
+  backdropFilter: 'blur(12px)',
+  borderBottom: '1px solid #1a1a1a',
+  position: 'sticky', top: 0, zIndex: 100,
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('intro')
   const [songs, setSongs] = useState([])
   const [currentIndex, setCurrentIndex] = useState(-1)
+  const [nowPlaying, setNowPlaying] = useState(null)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   return (
-    <>
-      <header style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 24px',
-        background: 'rgba(10,12,20,0.85)',
-        borderBottom: '1px solid var(--border)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <RecordLogo />
-          <h1 style={{
-            margin: 0, fontSize: '1.4rem', fontWeight: 700,
-            color: 'var(--accent-2)', letterSpacing: 3,
-            textTransform: 'uppercase',
-            textShadow: '0 0 12px var(--accent-2), 0 0 24px var(--accent)',
-            borderLeft: '4px solid var(--accent-3)',
-            paddingLeft: 12,
-          }}>
-            The Culero Podcast
-          </h1>
+    <div style={{ minHeight: '100vh', background: '#000' }}>
+      <header style={headerStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <RecordLogo size={32} />
+          <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.5px', color: '#fff' }}>
+            CULERO
+          </span>
         </div>
+        <nav style={{ display: 'flex', gap: 4 }}>
+          {TABS.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+              background: activeTab === tab.id ? '#fff' : 'transparent',
+              color: activeTab === tab.id ? '#000' : '#666',
+              border: 'none',
+              borderRadius: '999px',
+              padding: '7px 16px',
+              fontSize: 13,
+              fontWeight: 600,
+              transition: 'all 0.2s',
+              letterSpacing: '0.01em',
+            }}
+            onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#fff' }}
+            onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#666' }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </header>
 
-      <nav style={{
-        display: 'flex', gap: 4, padding: '0 24px',
-        background: 'rgba(10,12,20,0.85)',
-        borderBottom: '1px solid var(--border)',
-      }}>
-        {TABS.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-            background: 'transparent', border: 'none', borderRadius: 0,
-            borderBottom: activeTab === tab.id ? '2px solid var(--accent-2)' : '2px solid transparent',
-            padding: '12px 16px',
-            color: activeTab === tab.id ? 'var(--accent-2)' : 'var(--muted)',
-            fontSize: '0.8rem', letterSpacing: '1.5px',
-            textShadow: activeTab === tab.id ? '0 0 8px var(--accent-2)' : 'none',
-            boxShadow: 'none', transform: 'none',
-          }}>
-            {tab.label.toUpperCase()}
-          </button>
-        ))}
-      </nav>
+      {activeTab === 'intro' && (
+        <Intro
+          songs={songs} setSongs={setSongs}
+          currentIndex={currentIndex} setCurrentIndex={setCurrentIndex}
+          nowPlaying={nowPlaying} setNowPlaying={setNowPlaying}
+          isPlaying={isPlaying} setIsPlaying={setIsPlaying}
+        />
+      )}
+      {activeTab === 'new-releases' && <NewReleases songs={songs} setCurrentIndex={setCurrentIndex} setActiveTab={setActiveTab} />}
+      {activeTab === 'radio' && <Radio />}
+      {activeTab === 'comments' && <Comments />}
 
-      <main style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
-        {activeTab === 'intro' && (
-          <Intro
-            songs={songs} setSongs={setSongs}
-            currentIndex={currentIndex} setCurrentIndex={setCurrentIndex}
-          />
-        )}
-        {activeTab === 'new-releases' && <NewReleases songs={songs} setCurrentIndex={setCurrentIndex} setActiveTab={setActiveTab} />}
-        {activeTab === 'radio' && <Radio />}
-        {activeTab === 'comments' && <Comments />}
-      </main>
-    </>
+      <footer style={{ borderTop: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: '#333' }}>© 2026 Culero Podcast · Chicago</span>
+        <span style={{ fontSize: 12, color: '#333' }}>bajingo.xyz</span>
+      </footer>
+    </div>
   )
 }

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
+import RecordLogo from '../components/RecordLogo'
 
-export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex }) {
+export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, nowPlaying, setNowPlaying, isPlaying, setIsPlaying }) {
   const audioRef = useRef(null)
-  const [nowPlaying, setNowPlaying] = useState('Nothing playing yet — pick a track from the list below')
-  const [isPlaying, setIsPlaying] = useState(false)
   const [upMixtape, setUpMixtape] = useState('')
   const [upTitle, setUpTitle] = useState('')
   const [upTrackNum, setUpTrackNum] = useState('')
@@ -12,10 +11,11 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex }
   const [upCover, setUpCover] = useState(null)
   const [upStatus, setUpStatus] = useState('')
   const [upStatusType, setUpStatusType] = useState('')
+  const [progress, setProgress] = useState(0)
+  const [currentTime, setCurrentTime] = useState('0:00')
+  const [showUpload, setShowUpload] = useState(false)
 
-  useEffect(() => {
-    loadSongs()
-  }, [])
+  useEffect(() => { loadSongs() }, [])
 
   async function getSupabase() {
     const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
@@ -37,6 +37,13 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex }
     audioRef.current.src = song.file_url
     audioRef.current.play()
     setNowPlaying(`${song.mixtape_name} — ${song.title}`)
+    setIsPlaying(true)
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60)
+    const sec = Math.floor(s % 60)
+    return `${m}:${sec.toString().padStart(2, '0')}`
   }
 
   async function uploadToR2(file, folder) {
@@ -48,161 +55,178 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex }
     const aws = new AwsClient({ accessKeyId: R2_ACCESS_KEY, secretAccessKey: R2_SECRET_KEY })
     const filePath = folder + '/' + Date.now() + '_' + file.name
     const url = 'https://' + R2_ACCOUNT + '.r2.cloudflarestorage.com/' + BUCKET + '/' + filePath
-    const res = await aws.fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': file.type },
-      body: file,
-    })
+    const res = await aws.fetch(url, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file })
     if (!res.ok) throw new Error('R2 upload failed: ' + res.status)
     return R2_URL + '/' + filePath
   }
 
   async function handleUpload() {
-    if (!upMixtape || !upTitle || !upFile) {
-      setUpStatus('Mixtape name, title, and a file are required.'); setUpStatusType('error'); return
-    }
+    if (!upMixtape || !upTitle || !upFile) { setUpStatus('Mixtape name, title, and file are required.'); setUpStatusType('error'); return }
     setUpStatus('Uploading audio...'); setUpStatusType('')
     let fileUrl, coverUrl = null
-    try {
-      fileUrl = await uploadToR2(upFile, 'audio')
-    } catch (e) {
-      setUpStatus('Audio upload failed: ' + e.message); setUpStatusType('error'); return
-    }
+    try { fileUrl = await uploadToR2(upFile, 'audio') }
+    catch (e) { setUpStatus('Upload failed: ' + e.message); setUpStatusType('error'); return }
     if (upCover) {
       setUpStatus('Uploading cover...')
       try { coverUrl = await uploadToR2(upCover, 'covers') }
-      catch (e) { setUpStatus('Cover upload failed: ' + e.message); setUpStatusType('error'); return }
+      catch (e) { setUpStatus('Cover upload failed.'); setUpStatusType('error'); return }
     }
-    setUpStatus('Saving to database...')
+    setUpStatus('Saving...')
     const sb = await getSupabase()
-    const { error: insertError } = await sb.from('songs').insert({
+    const { error } = await sb.from('songs').insert({
       mixtape_name: upMixtape, title: upTitle,
       track_number: upTrackNum ? parseInt(upTrackNum) : null,
       file_url: fileUrl, cover_url: coverUrl,
     })
-    if (insertError) { setUpStatus('Upload OK but DB save failed: ' + insertError.message); setUpStatusType('error'); return }
+    if (error) { setUpStatus('DB save failed: ' + error.message); setUpStatusType('error'); return }
     setUpStatus('Track added!'); setUpStatusType('ok')
     setUpMixtape(''); setUpTitle(''); setUpTrackNum(''); setUpFile(null); setUpCover(null)
     loadSongs()
   }
 
-  return (
-    <>
-      <div className="card">
-        <h2>Welcome</h2>
-        <p>This is a collection of mixtapes I've put together. Browse the tracklist below the player, or just hit play and let it run.</p>
-      </div>
+  const inputStyle = {
+    background: '#0a0a0a', border: '1px solid #222', color: '#fff',
+    borderRadius: 8, padding: '10px 14px', fontSize: 14,
+    fontFamily: 'Inter, sans-serif', width: '100%',
+    outline: 'none', transition: 'border-color 0.2s',
+  }
 
-      <div className="player" style={{
-        background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
-        borderRadius: 16, padding: 32, textAlign: 'center',
-        boxShadow: '0 0 30px rgba(0,246,255,0.08)', marginBottom: 16,
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20, position: 'relative' }}>
-          <div style={{
-            width: 200, height: 200, borderRadius: '50%',
-            background: `
-              radial-gradient(circle at 38% 35%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 12%),
-              repeating-radial-gradient(circle at center, rgba(255,255,255,0.09) 0 1.5px, rgba(0,0,0,0.12) 1.5px 3px, transparent 3px 7px),
-              radial-gradient(circle at center, #d8b13a 0 5%, #14141a 6% 8%, #0c0c10 9% 100%),
-              radial-gradient(circle at 50% 50%, #2c2c36 0%, #15151b 75%, #050507 100%)
-            `,
-            boxShadow: '0 10px 24px rgba(20,20,40,0.28), inset 0 0 0 1px rgba(255,255,255,0.06)',
-            position: 'relative',
-            animation: 'spin 6s linear infinite',
-            animationPlayState: isPlaying ? 'running' : 'paused',
-          }} />
-          <div style={{
-            position: 'absolute', top: -14, right: 'calc(50% - 130px)',
-            width: 90, height: 90,
-            transformOrigin: '12px 12px',
-            transform: isPlaying ? 'rotate(8deg)' : 'rotate(-28deg)',
-            transition: 'transform 0.4s ease',
-            zIndex: 2,
-          }}>
-            <div style={{
-              position: 'absolute', top: 0, left: 0,
-              width: 24, height: 24, borderRadius: '50%',
-              background: 'radial-gradient(circle at 35% 30%, #e8e8ee, #9a9aa6 60%, #5c5c66 100%)',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.35)',
-            }} />
-            <div style={{
-              position: 'absolute', top: 10, left: 10,
-              width: 4, height: 78,
-              background: 'linear-gradient(180deg, #c9c9d2, #8a8a96)',
-              borderRadius: 2, transformOrigin: 'top center',
-            }} />
-            <div style={{
-              position: 'absolute', top: 80, left: 6,
-              width: 12, height: 16,
-              background: 'linear-gradient(180deg, #3a3a42, #1b1b21)',
-              borderRadius: 3,
-            }} />
+  return (
+    <div>
+      {/* Hero */}
+      <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid #1a1a1a', position: 'relative', overflow: 'hidden', minHeight: 340 }}>
+        <div style={{ position: 'absolute', right: 60, top: '50%', transform: 'translateY(-50%)', opacity: 0.15, pointerEvents: 'none' }}>
+          <RecordLogo size={280} spinning={isPlaying} />
+        </div>
+        <div style={{ opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: '#444', textTransform: 'uppercase', marginBottom: 20 }}>
+            Chicago · Independent
           </div>
         </div>
-
-        <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 14, color: 'var(--accent-3)', textShadow: '0 0 10px rgba(255,215,0,0.4)' }}>
-          {nowPlaying}
+        <div style={{ opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>
+          <h1 style={{ fontSize: 72, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: '#fff', marginBottom: 24 }}>
+            Real talk.<br />No filter.
+          </h1>
         </div>
-        <audio ref={audioRef} controls style={{ width: '100%', marginTop: 12 }}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => playSong(currentIndex + 1)}
-        />
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 16 }}>
-          <button onClick={() => playSong(currentIndex - 1)}>⏮ Prev</button>
-          <button onClick={() => playSong(currentIndex + 1)}>Next ⏭</button>
+        <div style={{ opacity: 0, animation: 'fadeUp 0.6s 0.4s forwards' }}>
+          <p style={{ fontSize: 16, color: '#555', maxWidth: 380, lineHeight: 1.6, marginBottom: 36 }}>
+            A collection of mixtapes curated from Chicago. Browse the tracklist or just hit play and let it run.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 12, opacity: 0, animation: 'fadeUp 0.6s 0.55s forwards' }}>
+          <button
+            onClick={() => playSong(0)}
+            style={{ background: '#fff', color: '#000', border: 'none', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s, background 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.background = '#e8e8e8' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = '#fff' }}
+          >▶ Play now</button>
+          <button
+            onClick={() => setShowUpload(s => !s)}
+            style={{ background: 'transparent', color: '#fff', border: '1px solid #333', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 600, transition: 'border-color 0.15s, transform 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#666'; e.currentTarget.style.transform = 'scale(1.04)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.transform = 'scale(1)' }}
+          >+ Add track</button>
         </div>
       </div>
 
-      <div className="card">
-        <h3>Tracklist</h3>
-        {songs.length === 0
-          ? <p className="muted">No episodes yet.</p>
-          : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  {['Mixtape','#','Title',''].map(h => (
-                    <th key={h} style={{ textAlign: 'left', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, color: 'var(--muted)', padding: '8px 12px', borderBottom: '2px solid var(--border)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {songs.map((song, idx) => (
-                  <tr key={song.id} onClick={() => playSong(idx)} style={{ cursor: 'pointer' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,246,255,0.06)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--accent-3)', fontWeight: 600 }}>{song.mixtape_name}</td>
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--muted)', width: 60 }}>{song.track_number ?? ''}</td>
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', fontWeight: 500 }}>{song.title}</td>
-                    <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', textAlign: 'right', color: 'var(--accent-2)', width: 30 }}>▶</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
-        }
+      {/* Now playing bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 40px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a' }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: isPlaying ? '#fff' : '#333', flexShrink: 0, animation: isPlaying ? 'pulse 2s infinite' : 'none' }} />
+        <div style={{ minWidth: 200 }}>
+          <div style={{ fontSize: 10, color: '#444', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Now playing</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginTop: 2 }}>{nowPlaying || 'Pick a track to begin'}</div>
+        </div>
+        <div style={{ flex: 1, height: 1, background: '#1a1a1a', borderRadius: 1, position: 'relative', cursor: 'pointer' }}
+          onClick={e => {
+            const rect = e.currentTarget.getBoundingClientRect()
+            const pct = (e.clientX - rect.left) / rect.width
+            if (audioRef.current && audioRef.current.duration) audioRef.current.currentTime = pct * audioRef.current.duration
+          }}
+        >
+          <div style={{ width: progress + '%', height: '100%', background: '#fff', borderRadius: 1, transition: 'width 0.1s' }} />
+        </div>
+        <div style={{ fontSize: 12, color: '#444', fontVariantNumeric: 'tabular-nums', minWidth: 36 }}>{currentTime}</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => playSong(currentIndex - 1)} style={{ background: 'none', border: '1px solid #222', borderRadius: '999px', color: '#666', padding: '6px 12px', fontSize: 12, transition: 'color 0.15s, border-color 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#444' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = '#222' }}
+          >⏮</button>
+          <button onClick={() => playSong(currentIndex + 1)} style={{ background: 'none', border: '1px solid #222', borderRadius: '999px', color: '#666', padding: '6px 12px', fontSize: 12, transition: 'color 0.15s, border-color 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#444' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = '#222' }}
+          >⏭</button>
+        </div>
       </div>
 
-      {(
-        <div className="card">
-          <h3>Add a track</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }} className="upload-grid">
-            <input placeholder="Mixtape name" value={upMixtape} onChange={e => setUpMixtape(e.target.value)} />
-            <input placeholder="Track title" value={upTitle} onChange={e => setUpTitle(e.target.value)} />
-            <input type="number" placeholder="Track #" value={upTrackNum} onChange={e => setUpTrackNum(e.target.value)} />
-            <input type="file" accept="audio/*" onChange={e => setUpFile(e.target.files[0])} />
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, color: 'var(--muted)' }}>
-              Cover art (optional)
-              <input type="file" accept="image/*" onChange={e => setUpCover(e.target.files[0])} />
+      <audio ref={audioRef} style={{ display: 'none' }}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => { setIsPlaying(false); playSong(currentIndex + 1) }}
+        onTimeUpdate={() => {
+          if (!audioRef.current) return
+          const { currentTime: ct, duration } = audioRef.current
+          if (duration) setProgress((ct / duration) * 100)
+          setCurrentTime(formatTime(ct))
+        }}
+      />
+
+      {/* Upload panel */}
+      {showUpload && (
+        <div style={{ padding: '32px 40px', borderBottom: '1px solid #1a1a1a', background: '#0a0a0a', animation: 'fadeUp 0.3s ease forwards' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20 }}>Add a track</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 10, marginBottom: 10 }}>
+            <input style={inputStyle} placeholder="Mixtape name" value={upMixtape} onChange={e => setUpMixtape(e.target.value)}
+              onFocus={e => e.target.style.borderColor = '#444'} onBlur={e => e.target.style.borderColor = '#222'} />
+            <input style={inputStyle} placeholder="Track title" value={upTitle} onChange={e => setUpTitle(e.target.value)}
+              onFocus={e => e.target.style.borderColor = '#444'} onBlur={e => e.target.style.borderColor = '#222'} />
+            <input type="number" style={inputStyle} placeholder="Track #" value={upTrackNum} onChange={e => setUpTrackNum(e.target.value)}
+              onFocus={e => e.target.style.borderColor = '#444'} onBlur={e => e.target.style.borderColor = '#222'} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+            <label style={{ ...inputStyle, cursor: 'pointer', color: upFile ? '#fff' : '#444' }}>
+              {upFile ? '✓ ' + upFile.name : 'Select audio file (.mp3)'}
+              <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => setUpFile(e.target.files[0])} />
+            </label>
+            <label style={{ ...inputStyle, cursor: 'pointer', color: upCover ? '#fff' : '#444' }}>
+              {upCover ? '✓ ' + upCover.name : 'Cover art (optional)'}
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setUpCover(e.target.files[0])} />
             </label>
           </div>
-          <button className="primary" onClick={handleUpload}>Upload</button>
-          {upStatus && <div className={`status-msg${upStatusType ? ' ' + upStatusType : ''}`}>{upStatus}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button onClick={handleUpload} style={{ background: '#fff', color: '#000', border: 'none', borderRadius: '999px', padding: '11px 24px', fontSize: 13, fontWeight: 700, transition: 'transform 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >Upload</button>
+            {upStatus && <span style={{ fontSize: 13, color: upStatusType === 'ok' ? '#5aea8a' : upStatusType === 'error' ? '#ff5555' : '#666' }}>{upStatus}</span>}
+          </div>
         </div>
       )}
-    </>
+
+      {/* Tracklist */}
+      <div style={{ borderBottom: '1px solid #1a1a1a' }}>
+        <div style={{ padding: '20px 40px 0' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#444', textTransform: 'uppercase', paddingBottom: 12, borderBottom: '1px solid #1a1a1a' }}>
+            Tracklist
+          </div>
+        </div>
+        {songs.length === 0 ? (
+          <div style={{ padding: '48px 40px', color: '#333', fontSize: 14 }}>No tracks yet. Add one above.</div>
+        ) : songs.map((song, idx) => (
+          <div key={song.id}
+            onClick={() => playSong(idx)}
+            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid #111', cursor: 'pointer', transition: 'background 0.15s', background: currentIndex === idx ? '#0d0d0d' : 'transparent' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#0d0d0d'}
+            onMouseLeave={e => { if (currentIndex !== idx) e.currentTarget.style.background = 'transparent' }}
+          >
+            <span style={{ fontSize: 12, color: '#333', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{String(idx + 1).padStart(2, '0')}</span>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 14, color: currentIndex === idx ? '#fff' : '#ccc' }}>{song.title}</div>
+              <div style={{ fontSize: 12, color: '#444', marginTop: 2 }}>{song.mixtape_name}</div>
+            </div>
+            <span style={{ fontSize: 13, color: '#333' }}>{currentIndex === idx && isPlaying ? '▶' : '›'}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

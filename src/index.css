@@ -1,87 +1,63 @@
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,900;1,900&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0a0e1a;
-  --panel: #1b1d24;
-  --panel-2: #262a35;
-  --accent: #ff2ad4;
-  --accent-2: #00f6ff;
-  --accent-3: #ffd700;
-  --text: #ffffff;
-  --muted: #9aa0b4;
-  --border: rgba(0, 246, 255, 0.3);
+  --black: #000;
+  --white: #fff;
+  --gray-1: #0a0a0a;
+  --gray-2: #111;
+  --gray-3: #1a1a1a;
+  --gray-4: #222;
+  --gray-5: #333;
+  --gray-6: #444;
+  --gray-7: #666;
+  --gray-8: #888;
+  --gold: #d8b13a;
+  --font: 'Inter', sans-serif;
+  --radius-pill: 999px;
+  --radius-card: 0px;
+  --transition: 0.2s ease;
 }
 
+html { scroll-behavior: smooth; }
+
 body {
-  margin: 0;
-  font-family: "Courier New", "Courier Prime", monospace;
-  background: linear-gradient(180deg, #0a0e1a, #11131c 40%, #1b1d24);
-  color: var(--text);
-  min-height: 100vh;
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; text-decoration: none; }
+button { font-family: var(--font); cursor: pointer; }
 
-button {
-  background: transparent;
-  color: var(--accent-2);
-  border: 1px solid var(--accent-2);
-  border-radius: 30px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: transform 0.1s;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-button:hover { transform: scale(1.05); box-shadow: 0 0 14px rgba(0, 246, 255, 0.5); }
-button.primary {
-  background: linear-gradient(90deg, var(--accent-2), var(--accent));
-  border: none;
-  color: #000;
-  font-weight: bold;
-  box-shadow: 0 0 16px rgba(0, 246, 255, 0.5);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-button.primary:hover { box-shadow: 0 0 24px rgba(255, 42, 212, 0.6); }
-
-input, textarea {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 0.9rem;
-  font-family: inherit;
+@keyframes spinRecord {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
-textarea { resize: vertical; min-height: 70px; padding: 10px; }
-
-.card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
 }
-.card h2, .card h3 {
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  font-size: 1rem;
-  color: var(--accent-2);
-  text-shadow: 0 0 8px rgba(0, 246, 255, 0.4);
-  margin-bottom: 10px;
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-.muted { color: var(--muted); font-size: 0.85rem; }
-.status-msg { font-size: 0.85rem; margin-top: 8px; }
-.status-msg.error { color: var(--accent); }
-.status-msg.ok { color: #39ff88; }
+.animate-fade-up { animation: fadeUp 0.6s ease forwards; }
+.animate-fade-in { animation: fadeIn 0.6s ease forwards; }
 
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-@media (max-width: 600px) {
-  .upload-grid { grid-template-columns: 1fr !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

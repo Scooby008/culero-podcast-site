@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../App'
 
-export default function Comments({ session }) {
+export default function Comments() {
   const [comments, setComments] = useState([])
   const [name, setName] = useState('')
   const [body, setBody] = useState('')
@@ -17,38 +17,64 @@ export default function Comments({ session }) {
 
   async function loadComments() {
     const sb = await getSupabase()
-    const { data, error } = await sb.from('comments').select('*').order('created_at', { ascending: false })
-    if (!error) setComments(data || [])
+    const { data } = await sb.from('comments').select('*').order('created_at', { ascending: false })
+    if (data) setComments(data)
   }
 
   async function handleSubmit() {
-    if (!name || !body) { setStatus('Name and comment are both required.'); setStatusType('error'); return }
+    if (!name || !body) { setStatus('Name and comment are required.'); setStatusType('error'); return }
     const sb = await getSupabase()
     const { error } = await sb.from('comments').insert({ name, body })
-    if (error) { setStatus('Could not post comment: ' + error.message); setStatusType('error'); return }
+    if (error) { setStatus('Could not post comment.'); setStatusType('error'); return }
     setName(''); setBody('')
     setStatus('Posted!'); setStatusType('ok')
     loadComments()
   }
 
+  const inputStyle = {
+    background: '#0a0a0a', border: '1px solid #1a1a1a', color: '#fff',
+    borderRadius: 8, padding: '12px 16px', fontSize: 14,
+    fontFamily: 'Inter, sans-serif', width: '100%', outline: 'none',
+    transition: 'border-color 0.2s',
+  }
+
   return (
-    <div className="card">
-      <h3>Comments</h3>
-      {comments.length === 0
-        ? <p className="muted">No comments yet — be the first.</p>
-        : comments.map(c => (
-          <div key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '12px 0' }}>
-            <span style={{ color: 'var(--accent-3)', fontWeight: 600 }}>{c.name}</span>
-            <span className="muted" style={{ fontSize: '0.8rem', marginLeft: 8 }}>{new Date(c.created_at).toLocaleString()}</span>
-            <p style={{ marginTop: 4 }}>{c.body}</p>
-          </div>
-        ))
-      }
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
-        <input placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
-        <textarea placeholder="Say something about the mixtapes…" value={body} onChange={e => setBody(e.target.value)} />
-        <button className="primary" onClick={handleSubmit}>Post comment</button>
-        {status && <div className={`status-msg${statusType ? ' ' + statusType : ''}`}>{status}</div>}
+    <div>
+      <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid #1a1a1a' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: '#444', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>Community</div>
+        <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: '#fff', opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>Say something.</h1>
+      </div>
+
+      <div style={{ maxWidth: 600, padding: '40px 40px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+          <input style={inputStyle} placeholder="Your name" value={name} onChange={e => setName(e.target.value)}
+            onFocus={e => e.target.style.borderColor = '#333'} onBlur={e => e.target.style.borderColor = '#1a1a1a'} />
+          <textarea style={{ ...inputStyle, minHeight: 100, resize: 'vertical' }} placeholder="What's on your mind..." value={body} onChange={e => setBody(e.target.value)}
+            onFocus={e => e.target.style.borderColor = '#333'} onBlur={e => e.target.style.borderColor = '#1a1a1a'} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button onClick={handleSubmit}
+            style={{ background: '#fff', color: '#000', border: 'none', borderRadius: '999px', padding: '12px 24px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          >Post comment</button>
+          {status && <span style={{ fontSize: 13, color: statusType === 'ok' ? '#5aea8a' : '#ff5555' }}>{status}</span>}
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px solid #1a1a1a' }}>
+        {comments.length === 0
+          ? <div style={{ padding: '40px', color: '#333', fontSize: 14 }}>No comments yet — be the first.</div>
+          : comments.map((c, i) => (
+            <div key={c.id} style={{ padding: '24px 40px', borderBottom: '1px solid #111', animation: `slideIn 0.4s ${i * 0.05}s both` }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
+                <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>{c.name}</span>
+                <span style={{ fontSize: 11, color: '#333' }}>{new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              </div>
+              <p style={{ fontSize: 14, color: '#666', lineHeight: 1.6 }}>{c.body}</p>
+            </div>
+          ))
+        }
       </div>
     </div>
   )
