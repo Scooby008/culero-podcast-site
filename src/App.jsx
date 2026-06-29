@@ -20,9 +20,9 @@ const TABS = [
 const headerStyle = {
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
   padding: '0 40px', height: 64,
-  background: 'rgba(0,0,0,0.92)',
+  background: 'rgba(240,240,240,0.92)',
   backdropFilter: 'blur(12px)',
-  borderBottom: '1px solid #1a1a1a',
+  borderBottom: '1px solid var(--border)',
   position: 'sticky', top: 0, zIndex: 100,
 }
 
@@ -34,19 +34,19 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#000' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <header style={headerStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <RecordLogo size={32} />
-          <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.5px', color: '#fff' }}>
+          <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.5px', color: 'var(--black)' }}>
             CULERO
           </span>
         </div>
         <nav style={{ display: 'flex', gap: 4 }}>
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-              background: activeTab === tab.id ? '#fff' : 'transparent',
-              color: activeTab === tab.id ? '#000' : '#666',
+              background: activeTab === tab.id ? 'var(--black)' : 'transparent',
+              color: activeTab === tab.id ? '#fff' : 'var(--gray-2)',
               border: 'none',
               borderRadius: '999px',
               padding: '7px 16px',
@@ -55,8 +55,8 @@ export default function App() {
               transition: 'all 0.2s',
               letterSpacing: '0.01em',
             }}
-            onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#fff' }}
-            onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = '#666' }}
+            onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'var(--black)' }}
+            onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'var(--gray-2)' }}
             >
               {tab.label}
             </button>
@@ -77,8 +77,8 @@ export default function App() {
       {activeTab === 'comments' && <Comments />}
 
       <footer style={{ borderTop: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 12, color: '#333' }}>© 2026 Culero Podcast · Chicago</span>
-        <span style={{ fontSize: 12, color: '#333' }}>bajingo.xyz</span>
+        <span style={{ fontSize: 12, color: 'var(--gray-2)' }}>© 2026 Culero Podcast · Chicago</span>
+        <span style={{ fontSize: 12, color: 'var(--gray-2)' }}>bajingo.xyz</span>
       </footer>
     </div>
   )

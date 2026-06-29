@@ -3,28 +3,27 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --black: #000;
+  --bg: #F0F0F0;
+  --bg-2: #E8E8E8;
+  --bg-3: #DEDEDE;
+  --black: #0a0a0a;
+  --black-2: #1a1a1a;
+  --gray-1: #333;
+  --gray-2: #555;
+  --gray-3: #888;
+  --gray-4: #aaa;
   --white: #fff;
-  --gray-1: #0a0a0a;
-  --gray-2: #111;
-  --gray-3: #1a1a1a;
-  --gray-4: #222;
-  --gray-5: #333;
-  --gray-6: #444;
-  --gray-7: #666;
-  --gray-8: #888;
   --gold: #d8b13a;
+  --border: #D4D4D4;
+  --border-strong: #BEBEBE;
   --font: 'Inter', sans-serif;
-  --radius-pill: 999px;
-  --radius-card: 0px;
-  --transition: 0.2s ease;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--black);
-  color: var(--white);
+  background: var(--bg);
+  color: var(--black);
   font-family: var(--font);
   font-size: 15px;
   line-height: 1.6;
@@ -54,9 +53,6 @@ button { font-family: var(--font); cursor: pointer; }
   from { opacity: 0; transform: translateX(-16px); }
   to { opacity: 1; transform: translateX(0); }
 }
-
-.animate-fade-up { animation: fadeUp 0.6s ease forwards; }
-.animate-fade-in { animation: fadeIn 0.6s ease forwards; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

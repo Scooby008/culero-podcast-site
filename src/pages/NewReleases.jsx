@@ -42,32 +42,32 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
     setLoading(false)
   }
 
-  const cardStyle = { background: '#000', cursor: 'pointer', transition: 'background 0.2s' }
+  const cardStyle = { background: 'var(--bg)', cursor: 'pointer', transition: 'background 0.2s' }
 
   return (
     <div>
-      <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid #1a1a1a' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: '#444', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>Fresh drops</div>
-        <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: '#fff', opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>New releases.</h1>
+      <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>Fresh drops</div>
+        <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: 'var(--black)', opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>New releases.</h1>
       </div>
 
       {recentUploads.length > 0 && (
         <>
-          <div style={{ padding: '24px 40px 0', borderBottom: '1px solid #1a1a1a' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#444', textTransform: 'uppercase', paddingBottom: 16 }}>Your uploads</div>
+          <div style={{ padding: '24px 40px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--gray-3)', textTransform: 'uppercase', paddingBottom: 16 }}>Your uploads</div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: '#1a1a1a', borderBottom: '1px solid #1a1a1a' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderBottom: '1px solid var(--border)' }}>
             {recentUploads.map(song => (
               <div key={song.id} style={cardStyle} onClick={() => { setCurrentIndex(songs.findIndex(s => s.id === song.id)); setActiveTab('intro') }}
                 onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
                 onMouseLeave={e => e.currentTarget.style.background = '#000'}
               >
-                <div style={{ aspectRatio: '1/1', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ aspectRatio: '1/1', background: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {song.cover_url ? <img src={song.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 32 }}>♪</span>}
                 </div>
                 <div style={{ padding: '12px 16px' }}>
-                  <div style={{ fontSize: 11, color: '#444', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{song.mixtape_name}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{song.title}</div>
+                  <div style={{ fontSize: 11, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{song.mixtape_name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)' }}>{song.title}</div>
                 </div>
               </div>
             ))}
@@ -76,22 +76,22 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
       )}
 
       <div style={{ padding: '24px 40px 0' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#444', textTransform: 'uppercase', paddingBottom: 16, borderBottom: '1px solid #1a1a1a' }}>From record labels</div>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--gray-3)', textTransform: 'uppercase', paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>From record labels</div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: '#1a1a1a' }}>
-        {loading ? <div style={{ padding: 40, color: '#333', fontSize: 14, background: '#000' }}>Loading...</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)' }}>
+        {loading ? <div style={{ padding: 40, color: 'var(--gray-1)', fontSize: 14, background: 'var(--bg)' }}>Loading...</div>
           : releases.map(r => (
             <a key={r.id} href={r.viewUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardStyle, display: 'block', color: 'inherit', textDecoration: 'none' }}
               onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
               onMouseLeave={e => e.currentTarget.style.background = '#000'}
             >
-              <div style={{ aspectRatio: '1/1', background: '#0a0a0a', overflow: 'hidden' }}>
+              <div style={{ aspectRatio: '1/1', background: 'var(--bg-2)', overflow: 'hidden' }}>
                 {r.artwork && <img src={r.artwork.replace('170x170', '300x300')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
               </div>
               <div style={{ padding: '12px 16px' }}>
-                <div style={{ fontSize: 11, color: '#444', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{r.name}</div>
-                <div style={{ fontSize: 12, color: '#444' }}>{r.artist}</div>
+                <div style={{ fontSize: 11, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)', marginBottom: 2 }}>{r.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--gray-3)' }}>{r.artist}</div>
               </div>
             </a>
           ))
