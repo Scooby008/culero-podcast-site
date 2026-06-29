@@ -117,7 +117,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
         <div style={{ display: 'flex', gap: 12, opacity: 0, animation: 'fadeUp 0.6s 0.55s forwards' }}>
           <button
             onClick={() => playSong(0)}
-            style={{ background: 'var(--black)', color: 'var(--black)', border: 'none', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s, background 0.15s' }}
+            style={{ background: 'var(--black)', color: '#fff', border: 'none', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s, background 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.background = '#e8e8e8' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'var(--black)' }}
           >▶ Play now</button>
