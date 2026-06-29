@@ -4,9 +4,8 @@ import RecordLogo from '../components/RecordLogo'
 
 const ACCESS_PASSWORD = 'Enjoy'
 
-export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, nowPlaying, setNowPlaying, isPlaying, setIsPlaying }) {
+export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, nowPlaying, setNowPlaying, isPlaying, setIsPlaying, listenUnlocked, setListenUnlocked }) {
   const audioRef = useRef(null)
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem('culero_access') === 'true')
   const [pwInput, setPwInput] = useState('')
   const [pwError, setPwError] = useState('')
   const [upMixtape, setUpMixtape] = useState('')
@@ -23,12 +22,25 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   function handleUnlock() {
     if (pwInput === ACCESS_PASSWORD) {
       sessionStorage.setItem('culero_access', 'true')
-      setUnlocked(true)
+      setListenUnlocked(true)
+      sessionStorage.setItem('culero_access', 'true')
       setPwError('')
     } else {
       setPwError('Incorrect password.')
       setPwInput('')
     }
+  }
+
+  function stopSong() {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current.src = ''
+    }
+    setIsPlaying(false)
+    setNowPlaying(null)
+    setProgress(0)
+    setCurrentTime('0:00')
   }
 
   useEffect(() => { loadSongs() }, [])
@@ -107,7 +119,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
     outline: 'none', transition: 'border-color 0.2s',
   }
 
-  if (!unlocked) {
+  if (!listenUnlocked) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '40px' }}>
         <div style={{ width: '100%', maxWidth: 380, textAlign: 'center' }}>
@@ -217,6 +229,10 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = '#444' }}
             onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = '#222' }}
           >⏭</button>
+          <button onClick={stopSong} style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 12px', fontSize: 12, transition: 'color 0.15s, border-color 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = '#444' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = '#222' }}
+          >■ Stop</button>
         </div>
       </div>
 

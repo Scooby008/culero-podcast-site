@@ -32,6 +32,7 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(-1)
   const [nowPlaying, setNowPlaying] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [listenUnlocked, setListenUnlocked] = useState(() => sessionStorage.getItem('culero_access') === 'true')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
