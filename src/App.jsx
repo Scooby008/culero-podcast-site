@@ -12,8 +12,8 @@ export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
 const TABS = [
   { id: 'intro', label: 'Listen' },
-  { id: 'new-releases', label: 'New Releases' },
   { id: 'radio', label: 'Radio' },
+  { id: 'new-releases', label: 'New Releases' },
   { id: 'comments', label: 'Comments' },
 ]
 
