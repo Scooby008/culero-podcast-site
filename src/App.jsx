@@ -71,6 +71,7 @@ export default function App() {
           currentIndex={currentIndex} setCurrentIndex={setCurrentIndex}
           nowPlaying={nowPlaying} setNowPlaying={setNowPlaying}
           isPlaying={isPlaying} setIsPlaying={setIsPlaying}
+          listenUnlocked={listenUnlocked} setListenUnlocked={setListenUnlocked}
         />
       )}
       {activeTab === 'new-releases' && <NewReleases songs={songs} setCurrentIndex={setCurrentIndex} setActiveTab={setActiveTab} />}
