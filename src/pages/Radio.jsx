@@ -3,7 +3,12 @@ import { useState, useRef } from 'react'
 const STATIONS = [
   { id: 'kexp', name: 'KEXP', location: 'Seattle, WA', desc: 'Independent music discovery — genre-defying and listener-supported since 1972.', url: 'https://kexp.streamguys1.com/kexp160.aac' },
   { id: 'kcrw', name: 'KCRW', location: 'Santa Monica, CA', desc: "Eclectic music, NPR news, and culture from LA's iconic public radio station.", url: 'https://kcrw.streamguys1.com/kcrw_192k_mp3_on_air' },
-  { id: 'triplej', name: 'Triple J', location: 'Sydney, Australia', desc: 'Australia\'s national youth radio network — alternative, indie, and the best new music from down under.', url: 'https://live-radio01.mediahubaustralia.com/2TJW/mp3/' },
+  { id: 'triplej', name: 'Triple J', location: 'Sydney, Australia', desc: "Australia's national youth radio — alternative, indie, and the best new music from down under.", url: 'https://live-radio01.mediahubaustralia.com/2TJW/mp3/' },
+  { id: 'thelot', name: 'The Lot Radio', location: 'Brooklyn, NY', desc: 'DJ sets from a repurposed shipping container on an empty lot in NYC. Underground and varied.', url: 'https://livepeercdn.studio/hls/85c28sa2o8wppm58/index.m3u8' },
+  { id: 'boogaloo', name: 'Boogaloo Radio', location: 'London, UK', desc: "The world's first pub radio station. Rock, soul, and indie from North London's famous Boogaloo.", url: 'https://streams.radio.co/sb88c742f0/listen' },
+  { id: 'buenavida', name: 'Radio Buena Vida', location: 'Glasgow, Scotland', desc: 'Community radio from a Glasgow record cafe. Experimental to disco to jungle, 24/7.', url: 'https://radiobuenavida.out.airtime.pro/radiobuenavida_a' },
+  { id: 'dublin', name: 'Dublin Digital Radio', location: 'Dublin, Ireland', desc: 'Volunteer-run community radio with 175+ residents. Music, art, and politics from Dublin.', url: 'https://dublin-digital-radio.radiocult.fm/stream' },
+  { id: 'worm', name: 'Radio Worm', location: 'Rotterdam, Netherlands', desc: 'Experimental and underground sounds from the heart of WORM arts centre. 80+ resident shows.', url: 'https://worm.streamnerd.nl/listen/worm/radio.mp3' },
   { id: 'r1', name: 'BBC Radio 1', location: 'London, UK', desc: "Chart hits, new music, and live events from the UK's biggest pop station.", bbcUrl: 'https://www.bbc.co.uk/sounds/play/live:bbc_radio_one' },
   { id: 'r6', name: 'BBC Radio 6', location: 'London, UK', desc: 'Alternative, indie, and eclectic music curated by world-class DJs.', bbcUrl: 'https://www.bbc.co.uk/sounds/play/live:bbc_6music' },
 ]
