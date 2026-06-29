@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
 import RecordLogo from '../components/RecordLogo'
 
+const ACCESS_PASSWORD = 'Enjoy'
+
 export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, nowPlaying, setNowPlaying, isPlaying, setIsPlaying }) {
   const audioRef = useRef(null)
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem('culero_access') === 'true')
+  const [pwInput, setPwInput] = useState('')
+  const [pwError, setPwError] = useState('')
   const [upMixtape, setUpMixtape] = useState('')
   const [upTitle, setUpTitle] = useState('')
   const [upTrackNum, setUpTrackNum] = useState('')
@@ -14,6 +19,17 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   const [progress, setProgress] = useState(0)
   const [currentTime, setCurrentTime] = useState('0:00')
   const [showUpload, setShowUpload] = useState(false)
+
+  function handleUnlock() {
+    if (pwInput === ACCESS_PASSWORD) {
+      sessionStorage.setItem('culero_access', 'true')
+      setUnlocked(true)
+      setPwError('')
+    } else {
+      setPwError('Incorrect password.')
+      setPwInput('')
+    }
+  }
 
   useEffect(() => { loadSongs() }, [])
 
@@ -89,6 +105,51 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
     borderRadius: 8, padding: '10px 14px', fontSize: 14,
     fontFamily: 'Inter, sans-serif', width: '100%',
     outline: 'none', transition: 'border-color 0.2s',
+  }
+
+  if (!unlocked) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '40px' }}>
+        <div style={{ width: '100%', maxWidth: 380, textAlign: 'center' }}>
+          <RecordLogo size={56} />
+          <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.5px', color: 'var(--black)', margin: '20px 0 8px' }}>
+            Members only
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--gray-2)', marginBottom: 28, lineHeight: 1.6 }}>
+            Enter the password to access the music player.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <input
+              type="password"
+              placeholder="Password"
+              value={pwInput}
+              onChange={e => setPwInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleUnlock()}
+              style={{
+                background: 'var(--bg-2)', border: '1px solid var(--border-strong)',
+                color: 'var(--black)', borderRadius: 8, padding: '12px 16px',
+                fontSize: 15, fontFamily: 'Inter, sans-serif', outline: 'none',
+                textAlign: 'center', letterSpacing: '0.1em',
+              }}
+              autoFocus
+            />
+            {pwError && <p style={{ fontSize: 13, color: '#c0392b', margin: 0 }}>{pwError}</p>}
+            <button
+              onClick={handleUnlock}
+              style={{
+                background: 'var(--black)', color: '#fff', border: 'none',
+                borderRadius: '999px', padding: '13px 28px', fontSize: 14,
+                fontWeight: 700, transition: 'transform 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              Enter
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
