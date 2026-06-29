@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
 
-export default function Intro({ session, role, songs, setSongs, currentIndex, setCurrentIndex }) {
+export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex }) {
   const audioRef = useRef(null)
   const [nowPlaying, setNowPlaying] = useState('Nothing playing yet — pick a track from the list below')
   const [isPlaying, setIsPlaying] = useState(false)
@@ -169,7 +169,7 @@ export default function Intro({ session, role, songs, setSongs, currentIndex, se
         }
       </div>
 
-      {loggedIn && (
+      {(
         <div className="card">
           <h3>Add a track</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }} className="upload-grid">

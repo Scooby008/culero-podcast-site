@@ -9,9 +9,6 @@ export const SUPABASE_URL = "https://kxybghfxcfzcxfvsacaj.supabase.co"
 export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4eWJnaGZ4Y2Z6Y3hmdnNhY2FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDI1NDgsImV4cCI6MjA5ODA3ODU0OH0.I_sUe_UUpViPjE27xc01zFvILZBp8Rv18GY7bZfM7qE"
 export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
-const VALID_USER = 'Chris'
-const VALID_PASS = 'Music'
-
 const TABS = [
   { id: 'intro', label: 'Intro & Player' },
   { id: 'new-releases', label: 'New Releases' },
@@ -57,29 +54,8 @@ const RecordLogo = () => (
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('intro')
-  const [loggedIn, setLoggedIn] = useState(false)
-  const [showModal, setShowModal] = useState(false)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState('')
   const [songs, setSongs] = useState([])
   const [currentIndex, setCurrentIndex] = useState(-1)
-
-  function handleLogin() {
-    if (username === VALID_USER && password === VALID_PASS) {
-      setLoggedIn(true)
-      setShowModal(false)
-      setLoginError('')
-      setUsername('')
-      setPassword('')
-    } else {
-      setLoginError('Invalid username or password.')
-    }
-  }
-
-  function handleLogout() {
-    setLoggedIn(false)
-  }
 
   return (
     <>
@@ -101,16 +77,6 @@ export default function App() {
           }}>
             The Culero Podcast
           </h1>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {loggedIn ? (
-            <>
-              <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Signed in</span>
-              <button onClick={handleLogout}>Sign out</button>
-            </>
-          ) : (
-            <button onClick={() => { setShowModal(true); setLoginError('') }}>Sign in</button>
-          )}
         </div>
       </header>
 
@@ -137,7 +103,6 @@ export default function App() {
       <main style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
         {activeTab === 'intro' && (
           <Intro
-            loggedIn={loggedIn}
             songs={songs} setSongs={setSongs}
             currentIndex={currentIndex} setCurrentIndex={setCurrentIndex}
           />
@@ -146,43 +111,6 @@ export default function App() {
         {activeTab === 'radio' && <Radio />}
         {activeTab === 'comments' && <Comments />}
       </main>
-
-      {showModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(5,5,15,0.85)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
-        }}>
-          <div style={{
-            background: 'var(--panel)', border: '1px solid var(--border)',
-            borderRadius: 12, padding: 24, width: 320,
-            boxShadow: '0 0 40px rgba(0,246,255,0.25)',
-          }}>
-            <h3 style={{ marginTop: 0, color: 'var(--accent-2)', marginBottom: 16 }}>Sign in</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
-              <input
-                placeholder="Username"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                style={{ width: '100%' }}
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                style={{ width: '100%' }}
-              />
-            </div>
-            {loginError && <div className="status-msg error" style={{ marginBottom: 10 }}>{loginError}</div>}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button onClick={() => { setShowModal(false); setLoginError(''); setUsername(''); setPassword('') }}>Cancel</button>
-              <button className="primary" onClick={handleLogin}>Sign in</button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
