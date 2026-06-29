@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../App'
+import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
 
 export default function Intro({ session, role, songs, setSongs, currentIndex, setCurrentIndex }) {
   const audioRef = useRef(null)
@@ -48,7 +48,8 @@ export default function Intro({ session, role, songs, setSongs, currentIndex, se
     const path = `${Date.now()}_${upFile.name}`
     const { error: uploadError } = await sb.storage.from('mixtape-audio').upload(path, upFile)
     if (uploadError) { setUpStatus('Upload failed: ' + uploadError.message); setUpStatusType('error'); return }
-    const { data: urlData } = sb.storage.from('mixtape-audio').getPublicUrl(path)
+    // Use R2 for public file URL
+    const fileUrl = `${R2_URL}/${path}`
     let coverUrl = null
     if (upCover) {
       const coverPath = `${Date.now()}_${upCover.name}`
@@ -60,7 +61,7 @@ export default function Intro({ session, role, songs, setSongs, currentIndex, se
     const { error: insertError } = await sb.from('songs').insert({
       mixtape_name: upMixtape, title: upTitle,
       track_number: upTrackNum ? parseInt(upTrackNum) : null,
-      file_url: urlData.publicUrl, cover_url: coverUrl,
+      file_url: fileUrl, cover_url: coverUrl,
     })
     if (insertError) { setUpStatus('File saved but DB insert failed.'); setUpStatusType('error'); return }
     setUpStatus('Track added!'); setUpStatusType('ok')
