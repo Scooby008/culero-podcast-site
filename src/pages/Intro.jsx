@@ -39,31 +39,48 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex }
     setNowPlaying(`${song.mixtape_name} — ${song.title}`)
   }
 
+  async function uploadToR2(file, folder) {
+    const { AwsClient } = await import('https://esm.sh/aws4fetch')
+    const R2_ACCOUNT = '545647a881b8447fba2e3b7f6869e73a'
+    const R2_ACCESS_KEY = 'ae4e3d2beaa0fcf7982dbf4a67506099'
+    const R2_SECRET_KEY = '84522cb873af3507ad8c53c23cf879b9c46f0097eabde54310cb48298e93d17c'
+    const BUCKET = 'culero-podcast-audio'
+    const aws = new AwsClient({ accessKeyId: R2_ACCESS_KEY, secretAccessKey: R2_SECRET_KEY })
+    const filePath = folder + '/' + Date.now() + '_' + file.name
+    const url = 'https://' + R2_ACCOUNT + '.r2.cloudflarestorage.com/' + BUCKET + '/' + filePath
+    const res = await aws.fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    })
+    if (!res.ok) throw new Error('R2 upload failed: ' + res.status)
+    return R2_URL + '/' + filePath
+  }
+
   async function handleUpload() {
     if (!upMixtape || !upTitle || !upFile) {
       setUpStatus('Mixtape name, title, and a file are required.'); setUpStatusType('error'); return
     }
-    setUpStatus('Uploading…'); setUpStatusType('')
-    const sb = await getSupabase()
-    const path = `${Date.now()}_${upFile.name}`
-    const { error: uploadError } = await sb.storage.from('mixtape-audio').upload(path, upFile)
-    if (uploadError) { setUpStatus('Upload failed: ' + uploadError.message); setUpStatusType('error'); return }
-    // Use R2 for public file URL
-    const fileUrl = `${R2_URL}/${path}`
-    let coverUrl = null
-    if (upCover) {
-      const coverPath = `${Date.now()}_${upCover.name}`
-      const { error: coverError } = await sb.storage.from('mixtape-covers').upload(coverPath, upCover)
-      if (coverError) { setUpStatus('Cover upload failed.'); setUpStatusType('error'); return }
-      const { data: cd } = sb.storage.from('mixtape-covers').getPublicUrl(coverPath)
-      coverUrl = cd.publicUrl
+    setUpStatus('Uploading audio...'); setUpStatusType('')
+    let fileUrl, coverUrl = null
+    try {
+      fileUrl = await uploadToR2(upFile, 'audio')
+    } catch (e) {
+      setUpStatus('Audio upload failed: ' + e.message); setUpStatusType('error'); return
     }
+    if (upCover) {
+      setUpStatus('Uploading cover...')
+      try { coverUrl = await uploadToR2(upCover, 'covers') }
+      catch (e) { setUpStatus('Cover upload failed: ' + e.message); setUpStatusType('error'); return }
+    }
+    setUpStatus('Saving to database...')
+    const sb = await getSupabase()
     const { error: insertError } = await sb.from('songs').insert({
       mixtape_name: upMixtape, title: upTitle,
       track_number: upTrackNum ? parseInt(upTrackNum) : null,
       file_url: fileUrl, cover_url: coverUrl,
     })
-    if (insertError) { setUpStatus('File saved but DB insert failed.'); setUpStatusType('error'); return }
+    if (insertError) { setUpStatus('Upload OK but DB save failed: ' + insertError.message); setUpStatusType('error'); return }
     setUpStatus('Track added!'); setUpStatusType('ok')
     setUpMixtape(''); setUpTitle(''); setUpTrackNum(''); setUpFile(null); setUpCover(null)
     loadSongs()
