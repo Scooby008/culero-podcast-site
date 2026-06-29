@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 const STATIONS = [
   { id: 'kexp', name: 'KEXP', location: 'Seattle, WA', desc: 'Independent music discovery — genre-defying and listener-supported since 1972.', url: 'https://kexp.streamguys1.com/kexp160.aac' },
   { id: 'kcrw', name: 'KCRW', location: 'Santa Monica, CA', desc: "Eclectic music, NPR news, and culture from LA's iconic public radio station.", url: 'https://kcrw.streamguys1.com/kcrw_192k_mp3_on_air' },
+  { id: 'triplej', name: 'Triple J', location: 'Sydney, Australia', desc: 'Australia\'s national youth radio network — alternative, indie, and the best new music from down under.', url: 'https://live-radio01.mediahubaustralia.com/2TJW/mp3/' },
   { id: 'r1', name: 'BBC Radio 1', location: 'London, UK', desc: "Chart hits, new music, and live events from the UK's biggest pop station.", bbcUrl: 'https://www.bbc.co.uk/sounds/play/live:bbc_radio_one' },
   { id: 'r6', name: 'BBC Radio 6', location: 'London, UK', desc: 'Alternative, indie, and eclectic music curated by world-class DJs.', bbcUrl: 'https://www.bbc.co.uk/sounds/play/live:bbc_6music' },
 ]
@@ -43,7 +44,7 @@ export default function Radio() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--border)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: 'var(--border)' }}>
         {STATIONS.map(s => (
           <div key={s.id}
             style={{ background: 'var(--bg)', padding: '36px 40px', cursor: 'pointer', transition: 'background 0.2s', borderLeft: playing === s.id ? '2px solid #fff' : '2px solid transparent' }}
