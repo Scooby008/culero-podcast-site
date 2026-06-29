@@ -204,35 +204,34 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       </div>
 
       {/* Now playing bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 40px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)', flexWrap: 'nowrap', minHeight: 64 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: isPlaying ? 'var(--black)' : 'var(--gray-4)', flexShrink: 0, animation: isPlaying ? 'pulse 2s infinite' : 'none' }} />
-        <div style={{ minWidth: 0, flex: '0 0 auto', maxWidth: 260 }}>
-          <div style={{ fontSize: 10, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Now playing</div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nowPlaying || 'Pick a track to begin'}</div>
+      <div style={{ padding: '14px 40px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
+        {/* Row 1: track info + controls */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: isPlaying ? 'var(--black)' : 'var(--gray-4)', flexShrink: 0, animation: isPlaying ? 'pulse 2s infinite' : 'none' }} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 10, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Now playing</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nowPlaying || 'Pick a track to begin'}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 16 }}>
+            <button onClick={() => playSong(currentIndex - 1)} title="Previous" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏮</button>
+            <button onClick={() => playSong(currentIndex + 1)} title="Next" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏭</button>
+            <button onClick={stopSong} style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: '#fff', padding: '6px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em' }}>■ Stop</button>
+          </div>
         </div>
-        <div style={{ flex: 1, height: 1, background: 'var(--border)', borderRadius: 1, position: 'relative', cursor: 'pointer', minWidth: 60 }}
-          onClick={e => {
-            const rect = e.currentTarget.getBoundingClientRect()
-            const pct = (e.clientX - rect.left) / rect.width
-            if (audioRef.current && audioRef.current.duration) audioRef.current.currentTime = pct * audioRef.current.duration
-          }}
-        >
-          <div style={{ width: progress + '%', height: '100%', background: 'var(--black)', borderRadius: 1, transition: 'width 0.1s' }} />
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--gray-3)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{currentTime}</div>
-        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          <button onClick={() => playSong(currentIndex - 1)} title="Previous" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12, transition: 'color 0.15s, border-color 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = '#444' }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'var(--border-strong)' }}
-          >⏮</button>
-          <button onClick={() => playSong(currentIndex + 1)} title="Next" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12, transition: 'color 0.15s, border-color 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = '#444' }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = 'var(--border-strong)' }}
-          >⏭</button>
-          <button onClick={stopSong} title="Stop" style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: '#fff', padding: '6px 14px', fontSize: 12, fontWeight: 600, transition: 'opacity 0.15s', letterSpacing: '0.04em' }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-          >■ Stop</button>
+        {/* Row 2: progress bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, height: 2, background: 'var(--border)', borderRadius: 1, cursor: 'pointer' }}
+            onClick={e => {
+              const rect = e.currentTarget.getBoundingClientRect()
+              const pct = (e.clientX - rect.left) / rect.width
+              if (audioRef.current && audioRef.current.duration) audioRef.current.currentTime = pct * audioRef.current.duration
+            }}
+          >
+            <div style={{ width: progress + '%', height: '100%', background: 'var(--black)', borderRadius: 1, transition: 'width 0.1s' }} />
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--gray-3)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{currentTime}</div>
         </div>
       </div>
 
