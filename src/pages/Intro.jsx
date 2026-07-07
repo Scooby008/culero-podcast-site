@@ -3,6 +3,8 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
 import RecordLogo from '../components/RecordLogo'
 
 const ACCESS_PASSWORD = 'Enjoy'
+const MAX_UPLOAD_MB = 150
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
 export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, nowPlaying, setNowPlaying, isPlaying, setIsPlaying, listenUnlocked, setListenUnlocked }) {
   const audioRef = useRef(null)
@@ -90,6 +92,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
 
   async function handleUpload() {
     if (!upMixtape || !upTitle || !upFile) { setUpStatus('Mixtape name, title, and file are required.'); setUpStatusType('error'); return }
+    if (upFile.size > MAX_UPLOAD_BYTES) { setUpStatus(`File is too large (${(upFile.size / (1024 * 1024)).toFixed(1)}MB). Max size is ${MAX_UPLOAD_MB}MB.`); setUpStatusType('error'); return }
     setUpStatus('Uploading audio...'); setUpStatusType('')
     let fileUrl, coverUrl = null
     try { fileUrl = await uploadToR2(upFile, 'audio') }
@@ -169,7 +172,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       {/* Hero */}
       <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)', position: 'relative', overflow: 'hidden', minHeight: 340 }}>
         <div style={{ position: 'absolute', right: 60, top: '50%', transform: 'translateY(-50%)', opacity: 0.15, pointerEvents: 'none' }}>
-          <RecordLogo size={280} spinning={isPlaying} />
+          <RecordLogo size={420} spinning={isPlaying} />
         </div>
         <div style={{ opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20 }}>
@@ -261,8 +264,20 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <label style={{ ...inputStyle, cursor: 'pointer', color: upFile ? 'var(--black)' : '#444' }}>
-              {upFile ? '✓ ' + upFile.name : 'Select audio file (.mp3)'}
-              <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => setUpFile(e.target.files[0])} />
+              {upFile ? '✓ ' + upFile.name : `Select audio file (max ${MAX_UPLOAD_MB}MB)`}
+              <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => {
+                const f = e.target.files[0]
+                if (f && f.size > MAX_UPLOAD_BYTES) {
+                  setUpStatus(`File is too large (${(f.size / (1024 * 1024)).toFixed(1)}MB). Max size is ${MAX_UPLOAD_MB}MB.`)
+                  setUpStatusType('error')
+                  e.target.value = ''
+                  setUpFile(null)
+                  return
+                }
+                setUpStatus('')
+                setUpStatusType('')
+                setUpFile(f)
+              }} />
             </label>
             <label style={{ ...inputStyle, cursor: 'pointer', color: upCover ? 'var(--black)' : '#444' }}>
               {upCover ? '✓ ' + upCover.name : 'Cover art (optional)'}
