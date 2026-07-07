@@ -78,25 +78,44 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
       <div style={{ padding: '24px 40px 0' }}>
         <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--gray-3)', textTransform: 'uppercase', paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>From record labels</div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)' }}>
-        {loading ? <div style={{ padding: 40, color: 'var(--gray-1)', fontSize: 14, background: 'var(--bg)' }}>Loading...</div>
-          : releases.map(r => (
-            <a key={r.id} href={r.viewUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardStyle, display: 'block', color: 'inherit', textDecoration: 'none' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
-              onMouseLeave={e => e.currentTarget.style.background = '#000'}
-            >
-              <div style={{ aspectRatio: '1/1', background: 'var(--bg-2)', overflow: 'hidden' }}>
-                {r.artwork && <img src={r.artwork.replace('170x170', '300x300')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+      {loading ? (
+        <div style={{ padding: 40, color: 'var(--gray-1)', fontSize: 14, background: 'var(--bg)' }}>Loading...</div>
+      ) : (
+        Object.entries(
+          releases.reduce((groups, r) => {
+            const key = new Date(r.releaseDate).toDateString()
+            ;(groups[key] = groups[key] || []).push(r)
+            return groups
+          }, {})
+        )
+          .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+          .map(([dateKey, group]) => (
+            <div key={dateKey}>
+              <div style={{ padding: '20px 40px 0' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--gray-3)', textTransform: 'uppercase', paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+                  {new Date(dateKey).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                </div>
               </div>
-              <div style={{ padding: '12px 16px' }}>
-                <div style={{ fontSize: 11, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)', marginBottom: 2 }}>{r.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--gray-3)' }}>{r.artist}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)' }}>
+                {group.map(r => (
+                  <a key={r.id} href={r.viewUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardStyle, display: 'block', color: 'inherit', textDecoration: 'none' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#000'}
+                  >
+                    <div style={{ aspectRatio: '1/1', background: 'var(--bg-2)', overflow: 'hidden' }}>
+                      {r.artwork && <img src={r.artwork.replace('170x170', '300x300')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    </div>
+                    <div style={{ padding: '12px 16px' }}>
+                      <div style={{ fontSize: 11, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)', marginBottom: 2 }}>{r.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--gray-3)' }}>{r.artist}</div>
+                    </div>
+                  </a>
+                ))}
               </div>
-            </a>
+            </div>
           ))
-        }
-      </div>
+      )}
     </div>
   )
 }
