@@ -7,7 +7,7 @@ const GENRES = [
   { id: 7, name: 'Electronic' }, { id: 17, name: 'EDM' },
 ]
 
-export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
+export default function NewReleases({ songs, playSong, setActiveTab }) {
   const [releases, setReleases] = useState([])
   const [loading, setLoading] = useState(true)
   const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 2)
@@ -81,7 +81,7 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderBottom: '1px solid var(--border)' }}>
             {recentUploads.map(song => (
-              <div key={song.id} style={cardStyle} onClick={() => { setCurrentIndex(songs.findIndex(s => s.id === song.id)); setActiveTab('intro') }}
+              <div key={song.id} style={cardStyle} onClick={() => playSong(songs.findIndex(s => s.id === song.id))}
                 onMouseEnter={cardEnter}
                 onMouseLeave={cardLeave}
               >

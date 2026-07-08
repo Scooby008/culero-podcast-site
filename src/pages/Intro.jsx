@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { R2_URL } from '../App'
 import { getSupabase } from '../lib/supabase'
 import RecordLogo from '../components/RecordLogo'
 import Equalizer from '../components/Equalizer'
-import { extractDominantColor } from '../lib/color'
 
 const ACCESS_PASSWORD = 'Enjoy'
 const MAX_UPLOAD_MB = 150
 const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
-export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, nowPlaying, setNowPlaying, isPlaying, setIsPlaying, listenUnlocked, setListenUnlocked }) {
-  const audioRef = useRef(null)
+export default function Intro({ songs, setSongs, currentIndex, isPlaying, accentColor, playSong, listenUnlocked, setListenUnlocked }) {
   const [pwInput, setPwInput] = useState('')
   const [pwError, setPwError] = useState('')
   const [upMixtape, setUpMixtape] = useState('')
@@ -20,14 +18,10 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   const [upCover, setUpCover] = useState(null)
   const [upStatus, setUpStatus] = useState('')
   const [upStatusType, setUpStatusType] = useState('')
-  const [progress, setProgress] = useState(0)
-  const [currentTime, setCurrentTime] = useState('0:00')
   const [showUpload, setShowUpload] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editValue, setEditValue] = useState('')
-  const [nowPlayingCover, setNowPlayingCover] = useState(null)
-  const [accentColor, setAccentColor] = useState(null)
 
   function handleUnlock() {
     if (pwInput === ACCESS_PASSWORD) {
@@ -39,20 +33,6 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       setPwError('Incorrect password.')
       setPwInput('')
     }
-  }
-
-  function stopSong() {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      audioRef.current.src = ''
-    }
-    setIsPlaying(false)
-    setNowPlaying(null)
-    setProgress(0)
-    setCurrentTime('0:00')
-    setNowPlayingCover(null)
-    setAccentColor(null)
   }
 
   useEffect(() => { loadSongs() }, [])
@@ -88,27 +68,6 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       setEditValue('')
       loadSongs()
     }
-  }
-
-  function playSong(index) {
-    if (index < 0 || index >= songs.length) return
-    setCurrentIndex(index)
-    const song = songs[index]
-    audioRef.current.src = song.file_url
-    audioRef.current.play()
-    setNowPlaying(`${song.mixtape_name} — ${song.title}`)
-    setIsPlaying(true)
-    setNowPlayingCover(song.cover_url || null)
-    setAccentColor(null)
-    if (song.cover_url) {
-      extractDominantColor(song.cover_url).then(rgb => setAccentColor(rgb))
-    }
-  }
-
-  function formatTime(s) {
-    const m = Math.floor(s / 60)
-    const sec = Math.floor(s % 60)
-    return `${m}:${sec.toString().padStart(2, '0')}`
   }
 
   async function uploadToR2(file, folder) {
@@ -255,58 +214,6 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           >+ Add track</button>
         </div>
       </div>
-
-      {/* Now playing bar */}
-      <div style={{ padding: '14px 40px', borderBottom: '1px solid var(--border)', background: accentColor ? `rgba(${accentColor}, 0.10)` : 'var(--bg-2)', transition: 'background 0.4s' }}>
-        {/* Row 1: track info + controls */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {nowPlayingCover
-                ? <img src={nowPlayingCover} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <RecordLogo size={26} spinning={isPlaying} accentColor={accentColor} />
-              }
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--mono)' }}>
-                <Equalizer color={accentColor ? `rgb(${accentColor})` : 'var(--gold)'} active={isPlaying} width={11} height={9} />
-                Now playing
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nowPlaying || 'Pick a track to begin'}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 16 }}>
-            <button onClick={() => playSong(currentIndex - 1)} title="Previous" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏮</button>
-            <button onClick={() => playSong(currentIndex + 1)} title="Next" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏭</button>
-            <button onClick={stopSong} style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: 'var(--bg)', padding: '6px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em' }}>■ Stop</button>
-          </div>
-        </div>
-        {/* Row 2: progress bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ flex: 1, height: 2, background: 'var(--border)', borderRadius: 1, cursor: 'pointer' }}
-            onClick={e => {
-              const rect = e.currentTarget.getBoundingClientRect()
-              const pct = (e.clientX - rect.left) / rect.width
-              if (audioRef.current && audioRef.current.duration) audioRef.current.currentTime = pct * audioRef.current.duration
-            }}
-          >
-            <div style={{ width: progress + '%', height: '100%', background: accentColor ? `rgb(${accentColor})` : 'var(--black)', borderRadius: 1, transition: 'width 0.1s, background 0.4s' }} />
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--gray-3)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)', flexShrink: 0 }}>{currentTime}</div>
-        </div>
-      </div>
-
-      <audio ref={audioRef} style={{ display: 'none' }}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => { setIsPlaying(false); playSong(currentIndex + 1) }}
-        onTimeUpdate={() => {
-          if (!audioRef.current) return
-          const { currentTime: ct, duration } = audioRef.current
-          if (duration) setProgress((ct / duration) * 100)
-          setCurrentTime(formatTime(ct))
-        }}
-      />
 
       {/* Upload panel */}
       {showUpload && (
