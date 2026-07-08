@@ -39,12 +39,12 @@ export default function Radio() {
 
       {playing && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 40px', background: 'var(--bg-2)', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--black)', animation: 'pulse 2s infinite' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--gold)', animation: 'pulse 2s infinite' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)' }}>{STATIONS.find(s => s.id === playing)?.name}</span>
           <span style={{ fontSize: 11, color: 'var(--gray-3)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Live</span>
           <button onClick={() => play(STATIONS.find(s => s.id === playing))} style={{ marginLeft: 'auto', background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 14px', fontSize: 12, transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = '#666' }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = '#333' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = 'var(--gray-2)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--gray-2)'; e.currentTarget.style.borderColor = 'var(--border-strong)' }}
           >Stop</button>
         </div>
       )}
@@ -52,17 +52,17 @@ export default function Radio() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: 'var(--border)' }}>
         {STATIONS.map(s => (
           <div key={s.id}
-            style={{ background: 'var(--bg)', padding: '36px 40px', cursor: 'pointer', transition: 'background 0.2s', borderLeft: playing === s.id ? '2px solid #fff' : '2px solid transparent' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
-            onMouseLeave={e => e.currentTarget.style.background = '#000'}
+            style={{ background: 'var(--bg)', padding: '36px 40px', cursor: 'pointer', transition: 'background 0.2s, transform 0.2s, box-shadow 0.2s', borderLeft: playing === s.id ? '3px solid var(--gold)' : '3px solid transparent', boxShadow: 'none', transform: 'translateY(0)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-2)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(10,10,10,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
           >
             <div style={{ fontSize: 11, color: 'var(--gray-1)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>{s.location}</div>
             <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1px', color: 'var(--black)', marginBottom: 10 }}>{s.name}</div>
             <p style={{ fontSize: 13, color: 'var(--gray-2)', lineHeight: 1.6, marginBottom: 24 }}>{s.desc}</p>
             <button onClick={() => play(s)}
-              style={{ background: playing === s.id ? 'var(--black)' : 'transparent', color: playing === s.id ? '#000' : 'var(--black)', border: '1px solid var(--border-strong)', borderRadius: '999px', padding: '10px 20px', fontSize: 12, fontWeight: 700, transition: 'all 0.2s', letterSpacing: '0.04em' }}
-              onMouseEnter={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = '#666'; e.currentTarget.style.background = '#111' } }}
-              onMouseLeave={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.background = 'transparent' } }}
+              style={{ background: playing === s.id ? 'var(--black)' : 'transparent', color: playing === s.id ? '#fff' : 'var(--black)', border: '1px solid var(--border-strong)', borderRadius: '999px', padding: '10px 20px', fontSize: 12, fontWeight: 700, transition: 'all 0.2s', letterSpacing: '0.04em' }}
+              onMouseEnter={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.background = 'var(--bg-3)' } }}
+              onMouseLeave={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'transparent' } }}
             >
               {s.bbcUrl ? '↗ BBC Sounds' : playing === s.id ? '■ Stop' : '▶ Play'}
             </button>
