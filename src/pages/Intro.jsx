@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
 import RecordLogo from '../components/RecordLogo'
+import Equalizer from '../components/Equalizer'
+import { extractDominantColor } from '../lib/color'
 
 const ACCESS_PASSWORD = 'Enjoy'
 const MAX_UPLOAD_MB = 150
@@ -23,6 +25,8 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editValue, setEditValue] = useState('')
+  const [nowPlayingCover, setNowPlayingCover] = useState(null)
+  const [accentColor, setAccentColor] = useState(null)
 
   function handleUnlock() {
     if (pwInput === ACCESS_PASSWORD) {
@@ -46,6 +50,8 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
     setNowPlaying(null)
     setProgress(0)
     setCurrentTime('0:00')
+    setNowPlayingCover(null)
+    setAccentColor(null)
   }
 
   useEffect(() => { loadSongs() }, [])
@@ -96,6 +102,11 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
     audioRef.current.play()
     setNowPlaying(`${song.mixtape_name} — ${song.title}`)
     setIsPlaying(true)
+    setNowPlayingCover(song.cover_url || null)
+    setAccentColor(null)
+    if (song.cover_url) {
+      extractDominantColor(song.cover_url).then(rgb => setAccentColor(rgb))
+    }
   }
 
   function formatTime(s) {
@@ -215,10 +226,10 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       {/* Hero */}
       <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)', position: 'relative', overflow: 'hidden', minHeight: 340 }}>
         <div style={{ position: 'absolute', right: 60, top: '50%', transform: 'translateY(-50%)', opacity: 0.15, pointerEvents: 'none' }}>
-          <RecordLogo size={420} spinning={isPlaying} />
+          <RecordLogo size={420} spinning={isPlaying} accentColor={accentColor} />
         </div>
         <div style={{ opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, fontFamily: 'var(--mono)' }}>
             Chicago · Independent
           </div>
         </div>
@@ -250,13 +261,21 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       </div>
 
       {/* Now playing bar */}
-      <div style={{ padding: '14px 40px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
+      <div style={{ padding: '14px 40px', borderBottom: '1px solid var(--border)', background: accentColor ? `rgba(${accentColor}, 0.10)` : 'var(--bg-2)', transition: 'background 0.4s' }}>
         {/* Row 1: track info + controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: isPlaying ? 'var(--black)' : 'var(--gray-4)', flexShrink: 0, animation: isPlaying ? 'pulse 2s infinite' : 'none' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {nowPlayingCover
+                ? <img src={nowPlayingCover} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <RecordLogo size={26} spinning={isPlaying} accentColor={accentColor} />
+              }
+            </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 10, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Now playing</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--mono)' }}>
+                <Equalizer color={accentColor ? `rgb(${accentColor})` : 'var(--gold)'} active={isPlaying} width={11} height={9} />
+                Now playing
+              </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nowPlaying || 'Pick a track to begin'}</div>
             </div>
           </div>
@@ -275,9 +294,9 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
               if (audioRef.current && audioRef.current.duration) audioRef.current.currentTime = pct * audioRef.current.duration
             }}
           >
-            <div style={{ width: progress + '%', height: '100%', background: 'var(--black)', borderRadius: 1, transition: 'width 0.1s' }} />
+            <div style={{ width: progress + '%', height: '100%', background: accentColor ? `rgb(${accentColor})` : 'var(--black)', borderRadius: 1, transition: 'width 0.1s, background 0.4s' }} />
           </div>
-          <div style={{ fontSize: 12, color: 'var(--gray-3)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{currentTime}</div>
+          <div style={{ fontSize: 12, color: 'var(--gray-3)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)', flexShrink: 0 }}>{currentTime}</div>
         </div>
       </div>
 
@@ -347,7 +366,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       {/* Tracklist */}
       <div style={{ borderBottom: '1px solid var(--border)' }}>
         <div style={{ padding: '20px 40px 0' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--gray-3)', textTransform: 'uppercase', paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--gray-3)', textTransform: 'uppercase', paddingBottom: 12, borderBottom: '1px solid var(--border)', fontFamily: 'var(--mono)' }}>
             Tracklist
           </div>
         </div>
@@ -356,11 +375,11 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
         ) : songs.map((song, idx) => (
           <div key={song.id}
             onClick={() => editingId !== song.id && playSong(idx)}
-            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', borderLeft: currentIndex === idx ? '3px solid var(--gold)' : '3px solid transparent', cursor: editingId === song.id ? 'default' : 'pointer', transition: 'background 0.15s, border-color 0.15s', background: currentIndex === idx ? 'rgba(216,177,58,0.10)' : 'transparent' }}
-            onMouseEnter={e => e.currentTarget.style.background = currentIndex === idx ? 'rgba(216,177,58,0.16)' : 'var(--bg-2)'}
-            onMouseLeave={e => { e.currentTarget.style.background = currentIndex === idx ? 'rgba(216,177,58,0.10)' : 'transparent' }}
+            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', borderLeft: currentIndex === idx ? `3px solid ${accentColor ? `rgb(${accentColor})` : 'var(--gold)'}` : '3px solid transparent', cursor: editingId === song.id ? 'default' : 'pointer', transition: 'background 0.15s, border-color 0.15s', background: currentIndex === idx ? `rgba(${accentColor || '216, 177, 58'}, 0.10)` : 'transparent' }}
+            onMouseEnter={e => e.currentTarget.style.background = currentIndex === idx ? `rgba(${accentColor || '216, 177, 58'}, 0.16)` : 'var(--bg-2)'}
+            onMouseLeave={e => { e.currentTarget.style.background = currentIndex === idx ? `rgba(${accentColor || '216, 177, 58'}, 0.10)` : 'transparent' }}
           >
-            <span style={{ fontSize: 12, color: 'var(--gray-1)', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{String(idx + 1).padStart(2, '0')}</span>
+            <span style={{ fontSize: 12, color: 'var(--gray-1)', fontVariantNumeric: 'tabular-nums', fontWeight: 600, fontFamily: 'var(--mono)' }}>{String(idx + 1).padStart(2, '0')}</span>
             <div>
               {editingId === song.id ? (
                 <input
@@ -388,7 +407,10 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
               ) : (
                 <>
                   <button onClick={e => startEdit(e, song)} title="Edit track name" style={{ background: 'none', border: 'none', color: 'var(--gray-3)', fontSize: 13, cursor: 'pointer', padding: 2 }}>✎</button>
-                  <span style={{ fontSize: 13, color: currentIndex === idx && isPlaying ? 'var(--gold)' : 'var(--gray-1)' }}>{currentIndex === idx && isPlaying ? '▶' : '›'}</span>
+                  {currentIndex === idx && isPlaying
+                    ? <Equalizer color={accentColor ? `rgb(${accentColor})` : 'var(--gold)'} active width={13} height={12} />
+                    : <span style={{ fontSize: 13, color: 'var(--gray-1)' }}>›</span>
+                  }
                 </>
               )}
             </div>
