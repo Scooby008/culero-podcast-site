@@ -3,19 +3,21 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #F0F0F0;
-  --bg-2: #E8E8E8;
-  --bg-3: #DEDEDE;
-  --black: #0a0a0a;
-  --black-2: #1a1a1a;
-  --gray-1: #333;
-  --gray-2: #555;
-  --gray-3: #888;
-  --gray-4: #aaa;
-  --white: #fff;
-  --gold: #d8b13a;
-  --border: #D4D4D4;
-  --border-strong: #BEBEBE;
+  --bg: #14110F;
+  --bg-2: #1E1A17;
+  --bg-3: #292420;
+  --black: #F4EDE3;        /* primary text (cream) — name kept for compatibility */
+  --black-2: #E7DECF;
+  --gray-1: #C9BFB2;
+  --gray-2: #A89F92;
+  --gray-3: #8A8175;
+  --gray-4: #5C554C;
+  --white: #14110F;        /* "on-emphasis" color — dark ink on cream/gold */
+  --gold: #E0A93E;
+  --coral: #E8603F;
+  --teal: #3FA88E;
+  --border: #2E2822;
+  --border-strong: #3F372E;
   --font: 'Inter', sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 }

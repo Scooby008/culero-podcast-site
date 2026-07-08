@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, R2_URL } from '../App'
+import { R2_URL } from '../App'
+import { getSupabase } from '../lib/supabase'
 import RecordLogo from '../components/RecordLogo'
 import Equalizer from '../components/Equalizer'
 import { extractDominantColor } from '../lib/color'
@@ -55,11 +56,6 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   }
 
   useEffect(() => { loadSongs() }, [])
-
-  async function getSupabase() {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
-    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  }
 
   async function loadSongs() {
     const sb = await getSupabase()
@@ -202,11 +198,11 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
               }}
               autoFocus
             />
-            {pwError && <p style={{ fontSize: 13, color: '#c0392b', margin: 0 }}>{pwError}</p>}
+            {pwError && <p style={{ fontSize: 13, color: 'var(--coral)', margin: 0 }}>{pwError}</p>}
             <button
               onClick={handleUnlock}
               style={{
-                background: 'var(--black)', color: '#fff', border: 'none',
+                background: 'var(--black)', color: 'var(--bg)', border: 'none',
                 borderRadius: '999px', padding: '13px 28px', fontSize: 14,
                 fontWeight: 700, transition: 'transform 0.15s',
               }}
@@ -247,15 +243,15 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
         <div style={{ display: 'flex', gap: 12, opacity: 0, animation: 'fadeUp 0.6s 0.55s forwards' }}>
           <button
             onClick={() => playSong(0)}
-            style={{ background: 'var(--black)', color: '#fff', border: 'none', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s, background 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.background = '#e8e8e8' }}
+            style={{ background: 'var(--black)', color: 'var(--bg)', border: 'none', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s, background 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.background = 'var(--gold)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'var(--black)' }}
           >▶ Play now</button>
           <button
             onClick={() => setShowUpload(s => !s)}
             style={{ background: 'transparent', color: 'var(--black)', border: '1px solid var(--border-strong)', borderRadius: '999px', padding: '13px 28px', fontSize: 14, fontWeight: 600, transition: 'border-color 0.15s, transform 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#666'; e.currentTarget.style.transform = 'scale(1.04)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.transform = 'scale(1)' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.transform = 'scale(1.04)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.transform = 'scale(1)' }}
           >+ Add track</button>
         </div>
       </div>
@@ -282,7 +278,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 16 }}>
             <button onClick={() => playSong(currentIndex - 1)} title="Previous" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏮</button>
             <button onClick={() => playSong(currentIndex + 1)} title="Next" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏭</button>
-            <button onClick={stopSong} style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: '#fff', padding: '6px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em' }}>■ Stop</button>
+            <button onClick={stopSong} style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: 'var(--bg)', padding: '6px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em' }}>■ Stop</button>
           </div>
         </div>
         {/* Row 2: progress bar */}
@@ -318,14 +314,14 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--black)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20 }}>Add a track</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 10, marginBottom: 10 }}>
             <input style={inputStyle} placeholder="Mixtape name" value={upMixtape} onChange={e => setUpMixtape(e.target.value)}
-              onFocus={e => e.target.style.borderColor = '#444'} onBlur={e => e.target.style.borderColor = '#222'} />
+              onFocus={e => e.target.style.borderColor = 'var(--gold)'} onBlur={e => e.target.style.borderColor = 'var(--border-strong)'} />
             <input style={inputStyle} placeholder="Track title" value={upTitle} onChange={e => setUpTitle(e.target.value)}
-              onFocus={e => e.target.style.borderColor = '#444'} onBlur={e => e.target.style.borderColor = '#222'} />
+              onFocus={e => e.target.style.borderColor = 'var(--gold)'} onBlur={e => e.target.style.borderColor = 'var(--border-strong)'} />
             <input type="number" style={inputStyle} placeholder="Track #" value={upTrackNum} onChange={e => setUpTrackNum(e.target.value)}
-              onFocus={e => e.target.style.borderColor = '#444'} onBlur={e => e.target.style.borderColor = '#222'} />
+              onFocus={e => e.target.style.borderColor = 'var(--gold)'} onBlur={e => e.target.style.borderColor = 'var(--border-strong)'} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-            <label style={{ ...inputStyle, cursor: 'pointer', color: upFile ? 'var(--black)' : '#444' }}>
+            <label style={{ ...inputStyle, cursor: 'pointer', color: upFile ? 'var(--black)' : 'var(--gray-2)' }}>
               {upFile ? '✓ ' + upFile.name : `Select audio file (max ${MAX_UPLOAD_MB}MB)`}
               <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={async e => {
                 const f = e.target.files[0]
@@ -345,20 +341,20 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
                 }
               }} />
             </label>
-            <label style={{ ...inputStyle, cursor: 'pointer', color: upCover ? 'var(--black)' : '#444' }}>
+            <label style={{ ...inputStyle, cursor: 'pointer', color: upCover ? 'var(--black)' : 'var(--gray-2)' }}>
               {upCover ? '✓ ' + upCover.name : 'Cover art (optional)'}
               <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setUpCover(e.target.files[0])} />
             </label>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button onClick={handleUpload} disabled={uploading} style={{ background: 'var(--gray-1)', color: '#fff', border: 'none', borderRadius: '999px', padding: '11px 24px', fontSize: 13, fontWeight: 700, transition: 'transform 0.15s', opacity: uploading ? 0.7 : 1, cursor: uploading ? 'default' : 'pointer' }}
+            <button onClick={handleUpload} disabled={uploading} style={{ background: 'var(--gray-1)', color: 'var(--bg)', border: 'none', borderRadius: '999px', padding: '11px 24px', fontSize: 13, fontWeight: 700, transition: 'transform 0.15s', opacity: uploading ? 0.7 : 1, cursor: uploading ? 'default' : 'pointer' }}
               onMouseEnter={e => { if (!uploading) e.currentTarget.style.transform = 'scale(1.03)' }}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >Upload</button>
             {uploading && (
               <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--border-strong)', borderTopColor: 'var(--gray-1)', animation: 'spinRecord 0.8s linear infinite' }} />
             )}
-            {upStatus && <span style={{ fontSize: 13, color: upStatusType === 'ok' ? 'var(--black)' : upStatusType === 'error' ? '#ff5555' : '#666' }}>{upStatus}</span>}
+            {upStatus && <span style={{ fontSize: 13, color: upStatusType === 'ok' ? 'var(--black)' : upStatusType === 'error' ? 'var(--coral)' : 'var(--gray-2)' }}>{upStatus}</span>}
           </div>
         </div>
       )}

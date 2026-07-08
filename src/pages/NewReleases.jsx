@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import RecordLogo from '../components/RecordLogo'
+import { hashColorRgb } from '../lib/color'
 
 const GENRES = [
   { id: 18, name: 'Hip Hop' }, { id: 21, name: 'Rock' }, { id: 14, name: 'Pop' },
@@ -10,6 +12,7 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
   const [loading, setLoading] = useState(true)
   const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 2)
   const recentUploads = songs.filter(s => new Date(s.created_at) >= cutoff)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
   useEffect(() => { loadReleases() }, [])
 
@@ -47,7 +50,7 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
   function cardEnter(e) {
     e.currentTarget.style.background = 'var(--bg-2)'
     e.currentTarget.style.transform = 'translateY(-3px)'
-    e.currentTarget.style.boxShadow = '0 10px 28px rgba(10,10,10,0.08)'
+    e.currentTarget.style.boxShadow = '0 10px 28px rgba(0,0,0,0.45)'
     const img = e.currentTarget.querySelector('img')
     if (img) img.style.transform = 'scale(1.06)'
     const overlay = e.currentTarget.querySelector('.play-overlay')
@@ -83,11 +86,24 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
                 onMouseLeave={cardLeave}
               >
                 <div style={{ position: 'relative', aspectRatio: '1/1', background: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {song.cover_url ? <img src={song.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }} /> : <span style={{ fontSize: 32 }}>♪</span>}
+                  {song.cover_url
+                    ? <img src={song.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }} />
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(140deg, rgba(${hashColorRgb(song.mixtape_name || song.title)}, 0.28), rgba(0,0,0,0.55)), var(--bg-2)` }}>
+                        <RecordLogo size={72} />
+                      </div>}
                   <div className="play-overlay" style={{ position: 'absolute', right: 10, bottom: 10, width: 28, height: 28, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a1400', opacity: 0, transition: 'opacity 0.2s' }}>▶</div>
                 </div>
                 <div style={{ padding: '12px 16px' }}>
-                  <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--mono)' }}>{song.mixtape_name}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--mono)' }}>
+                    <span style={{ color: 'var(--gold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {song.title?.trim().toLowerCase() === song.mixtape_name?.trim().toLowerCase()
+                        ? (song.track_number ? `EP ${song.track_number}` : 'Episode')
+                        : song.mixtape_name}
+                    </span>
+                    <span style={{ color: 'var(--gray-3)', flexShrink: 0 }}>
+                      {new Date(song.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)' }}>{song.title}</div>
                 </div>
               </div>

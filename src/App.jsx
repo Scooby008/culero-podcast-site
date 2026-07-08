@@ -6,8 +6,7 @@ import NewReleases from './pages/NewReleases'
 import Radio from './pages/Radio'
 import Comments from './pages/Comments'
 
-export const SUPABASE_URL = "https://kxybghfxcfzcxfvsacaj.supabase.co"
-export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4eWJnaGZ4Y2Z6Y3hmdnNhY2FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MDI1NDgsImV4cCI6MjA5ODA3ODU0OH0.I_sUe_UUpViPjE27xc01zFvILZBp8Rv18GY7bZfM7qE"
+export { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabase'
 export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
 const TABS = [
@@ -20,7 +19,7 @@ const TABS = [
 const headerStyle = {
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
   padding: '0 40px', height: 64,
-  background: 'rgba(240,240,240,0.92)',
+  background: 'rgba(20,17,15,0.92)',
   backdropFilter: 'blur(12px)',
   borderBottom: '1px solid var(--border)',
   position: 'sticky', top: 0, zIndex: 100,
@@ -46,8 +45,8 @@ export default function App() {
         <nav style={{ display: 'flex', gap: 4 }}>
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-              background: activeTab === tab.id ? 'var(--black)' : 'transparent',
-              color: activeTab === tab.id ? '#fff' : 'var(--gray-2)',
+              background: activeTab === tab.id ? 'var(--gold)' : 'transparent',
+              color: activeTab === tab.id ? 'var(--bg)' : 'var(--gray-2)',
               border: 'none',
               borderRadius: '999px',
               padding: '7px 16px',

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../App'
+import { getSupabase } from '../lib/supabase'
 
 export default function Comments() {
   const [comments, setComments] = useState([])
@@ -7,11 +7,6 @@ export default function Comments() {
   const [body, setBody] = useState('')
   const [status, setStatus] = useState('')
   const [statusType, setStatusType] = useState('')
-
-  async function getSupabase() {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
-    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  }
 
   useEffect(() => { loadComments() }, [])
 
@@ -54,11 +49,11 @@ export default function Comments() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button onClick={handleSubmit}
-            style={{ background: 'var(--black)', color: '#fff', border: 'none', borderRadius: '999px', padding: '12px 24px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s' }}
+            style={{ background: 'var(--black)', color: 'var(--bg)', border: 'none', borderRadius: '999px', padding: '12px 24px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >Post comment</button>
-          {status && <span style={{ fontSize: 13, color: statusType === 'ok' ? 'var(--black)' : '#ff5555' }}>{status}</span>}
+          {status && <span style={{ fontSize: 13, color: statusType === 'ok' ? 'var(--black)' : 'var(--coral)' }}>{status}</span>}
         </div>
       </div>
 

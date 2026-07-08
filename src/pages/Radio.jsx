@@ -70,7 +70,7 @@ export default function Radio() {
             <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1px', color: 'var(--black)', marginBottom: 10 }}>{s.name}</div>
             <p style={{ fontSize: 13, color: 'var(--gray-2)', lineHeight: 1.6, marginBottom: 24 }}>{s.desc}</p>
             <button onClick={() => play(s)}
-              style={{ background: playing === s.id ? 'var(--black)' : 'transparent', color: playing === s.id ? '#fff' : 'var(--black)', border: '1px solid var(--border-strong)', borderRadius: '999px', padding: '10px 20px', fontSize: 12, fontWeight: 700, transition: 'all 0.2s', letterSpacing: '0.04em' }}
+              style={{ background: playing === s.id ? 'var(--black)' : 'transparent', color: playing === s.id ? 'var(--bg)' : 'var(--black)', border: '1px solid var(--border-strong)', borderRadius: '999px', padding: '10px 20px', fontSize: 12, fontWeight: 700, transition: 'all 0.2s', letterSpacing: '0.04em' }}
               onMouseEnter={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = `rgb(${colorFor(s.id)})`; e.currentTarget.style.background = 'var(--bg-3)' } }}
               onMouseLeave={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'transparent' } }}
             >
