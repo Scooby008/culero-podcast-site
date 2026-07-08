@@ -9,7 +9,6 @@ import Comments from './pages/Comments'
 import { extractDominantColor } from './lib/color'
 
 export { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabase'
-export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
 const TABS = [
   { id: 'intro', label: 'Listen' },
