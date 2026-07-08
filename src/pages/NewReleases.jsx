@@ -67,7 +67,7 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
   return (
     <div>
       <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>Fresh drops</div>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards', fontFamily: 'var(--mono)' }}>Fresh drops</div>
         <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: 'var(--black)', opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>New releases.</h1>
       </div>
 
@@ -87,7 +87,7 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
                   <div className="play-overlay" style={{ position: 'absolute', right: 10, bottom: 10, width: 28, height: 28, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a1400', opacity: 0, transition: 'opacity 0.2s' }}>▶</div>
                 </div>
                 <div style={{ padding: '12px 16px' }}>
-                  <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{song.mixtape_name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--mono)' }}>{song.mixtape_name}</div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)' }}>{song.title}</div>
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
                       <div className="play-overlay" style={{ position: 'absolute', right: 10, bottom: 10, width: 28, height: 28, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a1400', opacity: 0, transition: 'opacity 0.2s' }}>▶</div>
                     </div>
                     <div style={{ padding: '12px 16px' }}>
-                      <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
+                      <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--mono)' }}>{r.genre}</div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)', marginBottom: 2 }}>{r.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--gray-3)' }}>{r.artist}</div>
                     </div>
