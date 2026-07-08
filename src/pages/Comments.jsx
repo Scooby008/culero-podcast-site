@@ -41,7 +41,7 @@ export default function Comments() {
   return (
     <div>
       <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>Community</div>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards', fontFamily: 'var(--mono)' }}>Community</div>
         <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: 'var(--black)', opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>Say something.</h1>
       </div>
 
@@ -73,7 +73,7 @@ export default function Comments() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
                   <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--black)' }}>{c.name}</span>
-                  <span style={{ fontSize: 11, color: 'var(--gray-1)' }}>{new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <span style={{ fontSize: 11, color: 'var(--gray-1)', fontFamily: 'var(--mono)' }}>{new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <p style={{ fontSize: 14, color: 'var(--gray-2)', lineHeight: 1.6 }}>{c.body}</p>
               </div>
