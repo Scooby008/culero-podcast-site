@@ -20,6 +20,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   const [progress, setProgress] = useState(0)
   const [currentTime, setCurrentTime] = useState('0:00')
   const [showUpload, setShowUpload] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   function handleUnlock() {
     if (pwInput === ACCESS_PASSWORD) {
@@ -93,26 +94,41 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   async function handleUpload() {
     if (!upMixtape || !upTitle || !upFile) { setUpStatus('Mixtape name, title, and file are required.'); setUpStatusType('error'); return }
     if (upFile.size > MAX_UPLOAD_BYTES) { setUpStatus(`File is too large (${(upFile.size / (1024 * 1024)).toFixed(1)}MB). Max size is ${MAX_UPLOAD_MB}MB.`); setUpStatusType('error'); return }
-    setUpStatus('Uploading audio...'); setUpStatusType('')
-    let fileUrl, coverUrl = null
-    try { fileUrl = await uploadToR2(upFile, 'audio') }
-    catch (e) { setUpStatus('Upload failed: ' + e.message); setUpStatusType('error'); return }
-    if (upCover) {
-      setUpStatus('Uploading cover...')
-      try { coverUrl = await uploadToR2(upCover, 'covers') }
-      catch (e) { setUpStatus('Cover upload failed.'); setUpStatusType('error'); return }
+    setUploading(true)
+    try {
+      setUpStatus('Uploading audio...'); setUpStatusType('')
+      let fileUrl, coverUrl = null
+      try { fileUrl = await uploadToR2(upFile, 'audio') }
+      catch (e) { setUpStatus('Upload failed: ' + e.message); setUpStatusType('error'); return }
+      if (upCover) {
+        setUpStatus('Uploading cover...')
+        try { coverUrl = await uploadToR2(upCover, 'covers') }
+        catch (e) { setUpStatus('Cover upload failed.'); setUpStatusType('error'); return }
+      }
+      setUpStatus('Saving...')
+      const sb = await getSupabase()
+      const { error } = await sb.from('songs').insert({
+        mixtape_name: upMixtape, title: upTitle,
+        track_number: upTrackNum ? parseInt(upTrackNum) : null,
+        file_url: fileUrl, cover_url: coverUrl,
+      })
+      if (error) { setUpStatus('DB save failed: ' + error.message); setUpStatusType('error'); return }
+      setUpStatus('Track added!'); setUpStatusType('ok')
+      setUpMixtape(''); setUpTitle(''); setUpTrackNum(''); setUpFile(null); setUpCover(null)
+      loadSongs()
+    } finally {
+      setUploading(false)
     }
-    setUpStatus('Saving...')
-    const sb = await getSupabase()
-    const { error } = await sb.from('songs').insert({
-      mixtape_name: upMixtape, title: upTitle,
-      track_number: upTrackNum ? parseInt(upTrackNum) : null,
-      file_url: fileUrl, cover_url: coverUrl,
-    })
-    if (error) { setUpStatus('DB save failed: ' + error.message); setUpStatusType('error'); return }
-    setUpStatus('Track added!'); setUpStatusType('ok')
-    setUpMixtape(''); setUpTitle(''); setUpTrackNum(''); setUpFile(null); setUpCover(null)
-    loadSongs()
+  }
+
+  async function readTrackTitleFromMetadata(file) {
+    try {
+      const { parseBlob } = await import('https://esm.sh/music-metadata-browser@2/+esm')
+      const meta = await parseBlob(file)
+      const title = meta?.common?.title
+      if (title) return title
+    } catch { }
+    return file.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim()
   }
 
   const inputStyle = {
@@ -265,7 +281,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <label style={{ ...inputStyle, cursor: 'pointer', color: upFile ? 'var(--black)' : '#444' }}>
               {upFile ? '✓ ' + upFile.name : `Select audio file (max ${MAX_UPLOAD_MB}MB)`}
-              <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={e => {
+              <input type="file" accept="audio/*" style={{ display: 'none' }} onChange={async e => {
                 const f = e.target.files[0]
                 if (f && f.size > MAX_UPLOAD_BYTES) {
                   setUpStatus(`File is too large (${(f.size / (1024 * 1024)).toFixed(1)}MB). Max size is ${MAX_UPLOAD_MB}MB.`)
@@ -277,6 +293,10 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
                 setUpStatus('')
                 setUpStatusType('')
                 setUpFile(f)
+                if (f) {
+                  const title = await readTrackTitleFromMetadata(f)
+                  if (title) setUpTitle(title)
+                }
               }} />
             </label>
             <label style={{ ...inputStyle, cursor: 'pointer', color: upCover ? 'var(--black)' : '#444' }}>
@@ -285,11 +305,14 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
             </label>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button onClick={handleUpload} style={{ background: 'var(--black)', color: 'var(--black)', border: 'none', borderRadius: '999px', padding: '11px 24px', fontSize: 13, fontWeight: 700, transition: 'transform 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+            <button onClick={handleUpload} disabled={uploading} style={{ background: 'var(--gray-1)', color: '#fff', border: 'none', borderRadius: '999px', padding: '11px 24px', fontSize: 13, fontWeight: 700, transition: 'transform 0.15s', opacity: uploading ? 0.7 : 1, cursor: uploading ? 'default' : 'pointer' }}
+              onMouseEnter={e => { if (!uploading) e.currentTarget.style.transform = 'scale(1.03)' }}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >Upload</button>
-            {upStatus && <span style={{ fontSize: 13, color: upStatusType === 'ok' ? '#5aea8a' : upStatusType === 'error' ? '#ff5555' : '#666' }}>{upStatus}</span>}
+            {uploading && (
+              <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--border-strong)', borderTopColor: 'var(--gray-1)', animation: 'spinRecord 0.8s linear infinite' }} />
+            )}
+            {upStatus && <span style={{ fontSize: 13, color: upStatusType === 'ok' ? 'var(--black)' : upStatusType === 'error' ? '#ff5555' : '#666' }}>{upStatus}</span>}
           </div>
         </div>
       )}
