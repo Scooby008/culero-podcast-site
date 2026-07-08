@@ -356,9 +356,9 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
         ) : songs.map((song, idx) => (
           <div key={song.id}
             onClick={() => editingId !== song.id && playSong(idx)}
-            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', cursor: editingId === song.id ? 'default' : 'pointer', transition: 'background 0.15s', background: currentIndex === idx ? '#0d0d0d' : 'transparent' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#0d0d0d'}
-            onMouseLeave={e => { if (currentIndex !== idx) e.currentTarget.style.background = 'transparent' }}
+            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', borderLeft: currentIndex === idx ? '3px solid var(--gold)' : '3px solid transparent', cursor: editingId === song.id ? 'default' : 'pointer', transition: 'background 0.15s, border-color 0.15s', background: currentIndex === idx ? 'rgba(216,177,58,0.10)' : 'transparent' }}
+            onMouseEnter={e => e.currentTarget.style.background = currentIndex === idx ? 'rgba(216,177,58,0.16)' : 'var(--bg-2)'}
+            onMouseLeave={e => { e.currentTarget.style.background = currentIndex === idx ? 'rgba(216,177,58,0.10)' : 'transparent' }}
           >
             <span style={{ fontSize: 12, color: 'var(--gray-1)', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{String(idx + 1).padStart(2, '0')}</span>
             <div>
@@ -375,7 +375,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
                   style={{ background: 'var(--bg-2)', border: '1px solid var(--border-strong)', color: 'var(--black)', borderRadius: 6, padding: '4px 8px', fontSize: 14, fontWeight: 600, fontFamily: 'Inter, sans-serif', outline: 'none', width: '100%' }}
                 />
               ) : (
-                <div style={{ fontWeight: 600, fontSize: 14, color: currentIndex === idx ? 'var(--black)' : '#ccc' }}>{song.title}</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: currentIndex === idx ? 'var(--black)' : 'var(--gray-1)' }}>{song.title}</div>
               )}
               <div style={{ fontSize: 12, color: 'var(--gray-3)', marginTop: 2 }}>{song.mixtape_name}</div>
             </div>
@@ -388,7 +388,7 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
               ) : (
                 <>
                   <button onClick={e => startEdit(e, song)} title="Edit track name" style={{ background: 'none', border: 'none', color: 'var(--gray-3)', fontSize: 13, cursor: 'pointer', padding: 2 }}>✎</button>
-                  <span style={{ fontSize: 13, color: 'var(--gray-1)' }}>{currentIndex === idx && isPlaying ? '▶' : '›'}</span>
+                  <span style={{ fontSize: 13, color: currentIndex === idx && isPlaying ? 'var(--gold)' : 'var(--gray-1)' }}>{currentIndex === idx && isPlaying ? '▶' : '›'}</span>
                 </>
               )}
             </div>
