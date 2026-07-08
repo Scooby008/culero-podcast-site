@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import Equalizer from '../components/Equalizer'
+import { hashColorRgb } from '../lib/color'
 
 const STATIONS = [
   { id: 'kexp', name: 'KEXP', location: 'Seattle, WA', desc: 'Independent music discovery — genre-defying and listener-supported since 1972.', url: 'https://kexp.streamguys1.com/kexp160.aac' },
@@ -17,6 +19,11 @@ export default function Radio() {
   const [playing, setPlaying] = useState(null)
   const audioRef = useRef(null)
 
+  // No real artwork exists for live radio streams, so each station gets a
+  // stable, deterministic identity color instead — a lightweight stand-in
+  // for cover-art theming that still makes the grid feel visually distinct.
+  const colorFor = id => hashColorRgb(id)
+
   function play(s) {
     if (s.bbcUrl) { window.open(s.bbcUrl, '_blank'); return }
     if (playing === s.id) { audioRef.current.pause(); audioRef.current.src = ''; setPlaying(null); return }
@@ -32,16 +39,16 @@ export default function Radio() {
 
       {/* Hero */}
       <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards' }}>Live radio</div>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards', fontFamily: 'var(--mono)' }}>Live radio</div>
         <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: 'var(--black)', marginBottom: 16, opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>Tune in.</h1>
         <p style={{ fontSize: 16, color: 'var(--gray-2)', opacity: 0, animation: 'fadeUp 0.6s 0.4s forwards' }}>Four stations. One click. No filler.</p>
       </div>
 
       {playing && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 40px', background: 'var(--bg-2)', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--gold)', animation: 'pulse 2s infinite' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 40px', background: `rgba(${colorFor(playing)}, 0.10)`, borderBottom: '1px solid var(--border)', transition: 'background 0.4s' }}>
+          <Equalizer color={`rgb(${colorFor(playing)})`} active width={13} height={12} />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)' }}>{STATIONS.find(s => s.id === playing)?.name}</span>
-          <span style={{ fontSize: 11, color: 'var(--gray-3)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Live</span>
+          <span style={{ fontSize: 11, color: `rgb(${colorFor(playing)})`, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--mono)', fontWeight: 700 }}>Live</span>
           <button onClick={() => play(STATIONS.find(s => s.id === playing))} style={{ marginLeft: 'auto', background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 14px', fontSize: 12, transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--black)'; e.currentTarget.style.borderColor = 'var(--gray-2)' }}
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--gray-2)'; e.currentTarget.style.borderColor = 'var(--border-strong)' }}
@@ -52,16 +59,19 @@ export default function Radio() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: 'var(--border)' }}>
         {STATIONS.map(s => (
           <div key={s.id}
-            style={{ background: 'var(--bg)', padding: '36px 40px', cursor: 'pointer', transition: 'background 0.2s, transform 0.2s, box-shadow 0.2s', borderLeft: playing === s.id ? '3px solid var(--gold)' : '3px solid transparent', boxShadow: 'none', transform: 'translateY(0)' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-2)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(10,10,10,0.08)' }}
+            style={{ background: 'var(--bg)', padding: '36px 40px', cursor: 'pointer', transition: 'background 0.2s, transform 0.2s, box-shadow 0.2s', borderLeft: playing === s.id ? `3px solid rgb(${colorFor(s.id)})` : '3px solid transparent', boxShadow: 'none', transform: 'translateY(0)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-2)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 10px 28px rgba(${colorFor(s.id)}, 0.18)` }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
           >
-            <div style={{ fontSize: 11, color: 'var(--gray-1)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>{s.location}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: `rgb(${colorFor(s.id)})`, flexShrink: 0 }} />
+              <div style={{ fontSize: 11, color: 'var(--gray-1)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{s.location}</div>
+            </div>
             <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1px', color: 'var(--black)', marginBottom: 10 }}>{s.name}</div>
             <p style={{ fontSize: 13, color: 'var(--gray-2)', lineHeight: 1.6, marginBottom: 24 }}>{s.desc}</p>
             <button onClick={() => play(s)}
               style={{ background: playing === s.id ? 'var(--black)' : 'transparent', color: playing === s.id ? '#fff' : 'var(--black)', border: '1px solid var(--border-strong)', borderRadius: '999px', padding: '10px 20px', fontSize: 12, fontWeight: 700, transition: 'all 0.2s', letterSpacing: '0.04em' }}
-              onMouseEnter={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.background = 'var(--bg-3)' } }}
+              onMouseEnter={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = `rgb(${colorFor(s.id)})`; e.currentTarget.style.background = 'var(--bg-3)' } }}
               onMouseLeave={e => { if (playing !== s.id) { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'transparent' } }}
             >
               {s.bbcUrl ? '↗ BBC Sounds' : playing === s.id ? '■ Stop' : '▶ Play'}
