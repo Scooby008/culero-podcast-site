@@ -79,8 +79,8 @@ export default function App() {
       {activeTab === 'comments' && <Comments />}
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 12, color: 'var(--gray-2)' }}>© 2026 Culero Podcast <span style={{ color: 'var(--gold)' }}>·</span> Chicago</span>
-        <span style={{ fontSize: 12, color: 'var(--gray-2)', transition: 'color 0.2s', cursor: 'default' }}
+        <span style={{ fontSize: 12, color: 'var(--gray-2)', fontFamily: 'var(--mono)' }}>© 2026 Culero Podcast <span style={{ color: 'var(--gold)' }}>·</span> Chicago</span>
+        <span style={{ fontSize: 12, color: 'var(--gray-2)', fontFamily: 'var(--mono)', transition: 'color 0.2s', cursor: 'default' }}
           onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
           onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-2)'}
         >bajingo.xyz</span>
