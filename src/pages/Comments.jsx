@@ -48,17 +48,17 @@ export default function Comments() {
       <div style={{ maxWidth: 600, padding: '40px 40px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
           <input style={inputStyle} placeholder="Your name" value={name} onChange={e => setName(e.target.value)}
-            onFocus={e => e.target.style.borderColor = '#333'} onBlur={e => e.target.style.borderColor = '#1a1a1a'} />
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
           <textarea style={{ ...inputStyle, minHeight: 100, resize: 'vertical' }} placeholder="What's on your mind..." value={body} onChange={e => setBody(e.target.value)}
-            onFocus={e => e.target.style.borderColor = '#333'} onBlur={e => e.target.style.borderColor = '#1a1a1a'} />
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button onClick={handleSubmit}
-            style={{ background: 'var(--black)', color: 'var(--black)', border: 'none', borderRadius: '999px', padding: '12px 24px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s' }}
+            style={{ background: 'var(--black)', color: '#fff', border: 'none', borderRadius: '999px', padding: '12px 24px', fontSize: 14, fontWeight: 700, transition: 'transform 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >Post comment</button>
-          {status && <span style={{ fontSize: 13, color: statusType === 'ok' ? '#5aea8a' : '#ff5555' }}>{status}</span>}
+          {status && <span style={{ fontSize: 13, color: statusType === 'ok' ? 'var(--black)' : '#ff5555' }}>{status}</span>}
         </div>
       </div>
 
@@ -66,12 +66,17 @@ export default function Comments() {
         {comments.length === 0
           ? <div style={{ padding: '40px', color: 'var(--gray-1)', fontSize: 14 }}>No comments yet — be the first.</div>
           : comments.map((c, i) => (
-            <div key={c.id} style={{ padding: '24px 40px', borderBottom: '1px solid var(--border)', animation: `slideIn 0.4s ${i * 0.05}s both` }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--black)' }}>{c.name}</span>
-                <span style={{ fontSize: 11, color: 'var(--gray-1)' }}>{new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            <div key={c.id} style={{ display: 'flex', gap: 14, padding: '24px 40px', borderBottom: '1px solid var(--border)', animation: `slideIn 0.4s ${i * 0.05}s both` }}>
+              <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: '50%', background: 'rgba(216,177,58,0.18)', color: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>
+                {(c.name || '?').trim().charAt(0).toUpperCase()}
               </div>
-              <p style={{ fontSize: 14, color: 'var(--gray-2)', lineHeight: 1.6 }}>{c.body}</p>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
+                  <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--black)' }}>{c.name}</span>
+                  <span style={{ fontSize: 11, color: 'var(--gray-1)' }}>{new Date(c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                </div>
+                <p style={{ fontSize: 14, color: 'var(--gray-2)', lineHeight: 1.6 }}>{c.body}</p>
+              </div>
             </div>
           ))
         }
