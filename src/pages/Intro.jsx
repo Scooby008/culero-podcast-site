@@ -21,6 +21,8 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
   const [currentTime, setCurrentTime] = useState('0:00')
   const [showUpload, setShowUpload] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editValue, setEditValue] = useState('')
 
   function handleUnlock() {
     if (pwInput === ACCESS_PASSWORD) {
@@ -59,6 +61,31 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
       .order('mixtape_name', { ascending: true })
       .order('track_number', { ascending: true })
     if (!error) setSongs(data || [])
+  }
+
+  function startEdit(e, song) {
+    e.stopPropagation()
+    setEditingId(song.id)
+    setEditValue(song.title)
+  }
+
+  function cancelEdit(e) {
+    if (e) e.stopPropagation()
+    setEditingId(null)
+    setEditValue('')
+  }
+
+  async function saveEdit(e, id) {
+    if (e) e.stopPropagation()
+    const trimmed = editValue.trim()
+    if (!trimmed) return
+    const sb = await getSupabase()
+    const { error } = await sb.from('songs').update({ title: trimmed }).eq('id', id)
+    if (!error) {
+      setEditingId(null)
+      setEditValue('')
+      loadSongs()
+    }
   }
 
   function playSong(index) {
@@ -328,17 +355,43 @@ export default function Intro({ songs, setSongs, currentIndex, setCurrentIndex, 
           <div style={{ padding: '48px 40px', color: 'var(--gray-1)', fontSize: 14 }}>No tracks yet. Add one above.</div>
         ) : songs.map((song, idx) => (
           <div key={song.id}
-            onClick={() => playSong(idx)}
-            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.15s', background: currentIndex === idx ? '#0d0d0d' : 'transparent' }}
+            onClick={() => editingId !== song.id && playSong(idx)}
+            style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', cursor: editingId === song.id ? 'default' : 'pointer', transition: 'background 0.15s', background: currentIndex === idx ? '#0d0d0d' : 'transparent' }}
             onMouseEnter={e => e.currentTarget.style.background = '#0d0d0d'}
             onMouseLeave={e => { if (currentIndex !== idx) e.currentTarget.style.background = 'transparent' }}
           >
             <span style={{ fontSize: 12, color: 'var(--gray-1)', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{String(idx + 1).padStart(2, '0')}</span>
             <div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: currentIndex === idx ? 'var(--black)' : '#ccc' }}>{song.title}</div>
+              {editingId === song.id ? (
+                <input
+                  autoFocus
+                  value={editValue}
+                  onClick={e => e.stopPropagation()}
+                  onChange={e => setEditValue(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') saveEdit(e, song.id)
+                    if (e.key === 'Escape') cancelEdit(e)
+                  }}
+                  style={{ background: 'var(--bg-2)', border: '1px solid var(--border-strong)', color: 'var(--black)', borderRadius: 6, padding: '4px 8px', fontSize: 14, fontWeight: 600, fontFamily: 'Inter, sans-serif', outline: 'none', width: '100%' }}
+                />
+              ) : (
+                <div style={{ fontWeight: 600, fontSize: 14, color: currentIndex === idx ? 'var(--black)' : '#ccc' }}>{song.title}</div>
+              )}
               <div style={{ fontSize: 12, color: 'var(--gray-3)', marginTop: 2 }}>{song.mixtape_name}</div>
             </div>
-            <span style={{ fontSize: 13, color: 'var(--gray-1)' }}>{currentIndex === idx && isPlaying ? '▶' : '›'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {editingId === song.id ? (
+                <>
+                  <button onClick={e => saveEdit(e, song.id)} title="Save" style={{ background: 'none', border: 'none', color: 'var(--black)', fontSize: 14, cursor: 'pointer', padding: 2 }}>✓</button>
+                  <button onClick={cancelEdit} title="Cancel" style={{ background: 'none', border: 'none', color: 'var(--gray-2)', fontSize: 14, cursor: 'pointer', padding: 2 }}>✕</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={e => startEdit(e, song)} title="Edit track name" style={{ background: 'none', border: 'none', color: 'var(--gray-3)', fontSize: 13, cursor: 'pointer', padding: 2 }}>✎</button>
+                  <span style={{ fontSize: 13, color: 'var(--gray-1)' }}>{currentIndex === idx && isPlaying ? '▶' : '›'}</span>
+                </>
+              )}
+            </div>
           </div>
         ))}
       </div>
