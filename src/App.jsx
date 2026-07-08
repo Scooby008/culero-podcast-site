@@ -78,9 +78,12 @@ export default function App() {
       {activeTab === 'radio' && <Radio />}
       {activeTab === 'comments' && <Comments />}
 
-      <footer style={{ borderTop: '1px solid #1a1a1a', padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 12, color: 'var(--gray-2)' }}>© 2026 Culero Podcast · Chicago</span>
-        <span style={{ fontSize: 12, color: 'var(--gray-2)' }}>bajingo.xyz</span>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: 'var(--gray-2)' }}>© 2026 Culero Podcast <span style={{ color: 'var(--gold)' }}>·</span> Chicago</span>
+        <span style={{ fontSize: 12, color: 'var(--gray-2)', transition: 'color 0.2s', cursor: 'default' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-2)'}
+        >bajingo.xyz</span>
       </footer>
     </div>
   )
