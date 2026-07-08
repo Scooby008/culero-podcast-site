@@ -42,7 +42,27 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
     setLoading(false)
   }
 
-  const cardStyle = { background: 'var(--bg)', cursor: 'pointer', transition: 'background 0.2s' }
+  const cardStyle = { background: 'var(--bg)', cursor: 'pointer', transition: 'background 0.2s, transform 0.2s, box-shadow 0.2s', transform: 'translateY(0)', boxShadow: 'none' }
+
+  function cardEnter(e) {
+    e.currentTarget.style.background = 'var(--bg-2)'
+    e.currentTarget.style.transform = 'translateY(-3px)'
+    e.currentTarget.style.boxShadow = '0 10px 28px rgba(10,10,10,0.08)'
+    const img = e.currentTarget.querySelector('img')
+    if (img) img.style.transform = 'scale(1.06)'
+    const overlay = e.currentTarget.querySelector('.play-overlay')
+    if (overlay) overlay.style.opacity = 1
+  }
+
+  function cardLeave(e) {
+    e.currentTarget.style.background = 'var(--bg)'
+    e.currentTarget.style.transform = 'translateY(0)'
+    e.currentTarget.style.boxShadow = 'none'
+    const img = e.currentTarget.querySelector('img')
+    if (img) img.style.transform = 'scale(1)'
+    const overlay = e.currentTarget.querySelector('.play-overlay')
+    if (overlay) overlay.style.opacity = 0
+  }
 
   return (
     <div>
@@ -59,14 +79,15 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)', borderBottom: '1px solid var(--border)' }}>
             {recentUploads.map(song => (
               <div key={song.id} style={cardStyle} onClick={() => { setCurrentIndex(songs.findIndex(s => s.id === song.id)); setActiveTab('intro') }}
-                onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
-                onMouseLeave={e => e.currentTarget.style.background = '#000'}
+                onMouseEnter={cardEnter}
+                onMouseLeave={cardLeave}
               >
-                <div style={{ aspectRatio: '1/1', background: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {song.cover_url ? <img src={song.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 32 }}>♪</span>}
+                <div style={{ position: 'relative', aspectRatio: '1/1', background: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {song.cover_url ? <img src={song.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }} /> : <span style={{ fontSize: 32 }}>♪</span>}
+                  <div className="play-overlay" style={{ position: 'absolute', right: 10, bottom: 10, width: 28, height: 28, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a1400', opacity: 0, transition: 'opacity 0.2s' }}>▶</div>
                 </div>
                 <div style={{ padding: '12px 16px' }}>
-                  <div style={{ fontSize: 11, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{song.mixtape_name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{song.mixtape_name}</div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)' }}>{song.title}</div>
                 </div>
               </div>
@@ -99,14 +120,15 @@ export default function NewReleases({ songs, setCurrentIndex, setActiveTab }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1px', background: 'var(--border)' }}>
                 {group.map(r => (
                   <a key={r.id} href={r.viewUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardStyle, display: 'block', color: 'inherit', textDecoration: 'none' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#0a0a0a'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#000'}
+                    onMouseEnter={cardEnter}
+                    onMouseLeave={cardLeave}
                   >
-                    <div style={{ aspectRatio: '1/1', background: 'var(--bg-2)', overflow: 'hidden' }}>
-                      {r.artwork && <img src={r.artwork.replace('170x170', '300x300')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    <div style={{ position: 'relative', aspectRatio: '1/1', background: 'var(--bg-2)', overflow: 'hidden' }}>
+                      {r.artwork && <img src={r.artwork.replace('170x170', '300x300')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }} />}
+                      <div className="play-overlay" style={{ position: 'absolute', right: 10, bottom: 10, width: 28, height: 28, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a1400', opacity: 0, transition: 'opacity 0.2s' }}>▶</div>
                     </div>
                     <div style={{ padding: '12px 16px' }}>
-                      <div style={{ fontSize: 11, color: 'var(--gray-3)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
+                      <div style={{ fontSize: 11, color: 'var(--gold)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{r.genre}</div>
                       <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)', marginBottom: 2 }}>{r.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--gray-3)' }}>{r.artist}</div>
                     </div>
