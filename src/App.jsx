@@ -53,6 +53,7 @@ export default function App() {
   const [nowPlayingCover, setNowPlayingCover] = useState(null)
   const [accentColor, setAccentColor] = useState(null)
   const [listenUnlocked, setListenUnlocked] = useState(() => sessionStorage.getItem('culero_access') === 'true')
+  const [showTracklist, setShowTracklist] = useState(false)
 
   function formatTime(s) {
     const m = Math.floor(s / 60)
@@ -157,6 +158,8 @@ export default function App() {
   })
 
   const playerVisible = listenUnlocked
+  const currentSong = songs[currentIndex]
+  const currentTracklist = Array.isArray(currentSong?.tracklist) ? currentSong.tracklist : null
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: playerVisible ? 96 : 0 }}>
@@ -211,6 +214,21 @@ export default function App() {
         >bajingo.xyz</span>
       </footer>
 
+      {/* Tracklist peek panel */}
+      {playerVisible && showTracklist && currentTracklist && (
+        <div style={{ position: 'fixed', bottom: 92, right: 16, width: 'min(340px, calc(100vw - 32px))', maxHeight: '50vh', overflowY: 'auto', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px', zIndex: 199, boxShadow: '0 14px 44px rgba(0,0,0,0.55)' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--gold)', fontFamily: 'var(--mono)', marginBottom: 10 }}>
+            In this episode
+          </div>
+          {currentTracklist.map((t, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '3px 0', fontSize: 12.5, color: 'var(--gray-2)', lineHeight: 1.5 }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--gray-4)', minWidth: 18, paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
+              {t}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Persistent bottom player */}
       {playerVisible && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200, padding: '12px 40px 14px', background: accentColor ? `linear-gradient(rgba(${accentColor}, 0.08), rgba(${accentColor}, 0.08)), rgba(20,17,15,0.96)` : 'rgba(20,17,15,0.96)', backdropFilter: 'blur(14px)', borderTop: '1px solid var(--border)', transition: 'background 0.4s' }}>
@@ -229,6 +247,9 @@ export default function App() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 16, alignItems: 'center' }}>
+              {currentTracklist && (
+                <button onClick={() => setShowTracklist(v => !v)} title="Show episode tracklist" style={{ background: showTracklist ? 'var(--gold)' : 'none', border: '1px solid ' + (showTracklist ? 'var(--gold)' : 'var(--border-strong)'), borderRadius: '999px', color: showTracklist ? 'var(--bg)' : 'var(--gray-2)', padding: '6px 10px', fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700, transition: 'all 0.15s' }}>♪ {currentTracklist.length}</button>
+              )}
               <button onClick={() => playSong(currentIndex - 1)} title="Previous track" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏮</button>
               <button onClick={() => seekBy(-15)} title="Back 15 seconds (←)" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700 }}>−15</button>
               <button onClick={togglePlay} title={isPlaying ? 'Pause (space)' : 'Play (space)'} style={{ background: accentColor ? `rgb(${accentColor})` : 'var(--gold)', border: 'none', borderRadius: '50%', color: 'var(--bg)', width: 38, height: 38, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.4s, transform 0.15s' }}

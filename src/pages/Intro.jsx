@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { R2_URL } from '../App'
 import { getSupabase } from '../lib/supabase'
 import RecordLogo from '../components/RecordLogo'
@@ -16,6 +16,8 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
   const [upTrackNum, setUpTrackNum] = useState('')
   const [upFile, setUpFile] = useState(null)
   const [upCover, setUpCover] = useState(null)
+  const [upTracklist, setUpTracklist] = useState('')
+  const [expandedId, setExpandedId] = useState(null)
   const [upStatus, setUpStatus] = useState('')
   const [upStatusType, setUpStatusType] = useState('')
   const [showUpload, setShowUpload] = useState(false)
@@ -123,10 +125,11 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
         mixtape_name: upMixtape, title: upTitle,
         track_number: upTrackNum ? parseInt(upTrackNum) : null,
         file_url: fileUrl, cover_url: coverUrl,
+        tracklist: upTracklist.trim() ? upTracklist.split('\n').map(t => t.trim()).filter(Boolean) : null,
       })
       if (error) { setUpStatus('DB save failed: ' + error.message); setUpStatusType('error'); return }
       setUpStatus('Track added!'); setUpStatusType('ok')
-      setUpMixtape(''); setUpTitle(''); setUpTrackNum(''); setUpFile(null); setUpCover(null)
+      setUpMixtape(''); setUpTitle(''); setUpTrackNum(''); setUpFile(null); setUpCover(null); setUpTracklist('')
       loadSongs()
     } finally {
       setUploading(false)
@@ -272,6 +275,14 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
               <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setUpCover(e.target.files[0])} />
             </label>
           </div>
+          <textarea
+            style={{ ...inputStyle, minHeight: 72, resize: 'vertical', marginBottom: 16 }}
+            placeholder={"Tracklist (optional) — one song per line, e.g.\nPixies - Hey\nNirvana - Negative Creep"}
+            value={upTracklist}
+            onChange={e => setUpTracklist(e.target.value)}
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border-strong)'}
+          />
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button onClick={handleUpload} disabled={uploading} style={{ background: 'var(--gray-1)', color: 'var(--bg)', border: 'none', borderRadius: '999px', padding: '11px 24px', fontSize: 13, fontWeight: 700, transition: 'transform 0.15s', opacity: uploading ? 0.7 : 1, cursor: uploading ? 'default' : 'pointer' }}
               onMouseEnter={e => { if (!uploading) e.currentTarget.style.transform = 'scale(1.03)' }}
@@ -295,7 +306,8 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
         {songs.length === 0 ? (
           <div style={{ padding: '48px 40px', color: 'var(--gray-1)', fontSize: 14 }}>No tracks yet. Add one above.</div>
         ) : songs.map((song, idx) => (
-          <div key={song.id}
+          <Fragment key={song.id}>
+          <div
             onClick={() => editingId !== song.id && playSong(idx)}
             style={{ display: 'grid', gridTemplateColumns: '40px 1fr auto', alignItems: 'center', gap: 16, padding: '16px 40px', borderBottom: '1px solid var(--border)', borderLeft: currentIndex === idx ? `3px solid ${accentColor ? `rgb(${accentColor})` : 'var(--gold)'}` : '3px solid transparent', cursor: editingId === song.id ? 'default' : 'pointer', transition: 'background 0.15s, border-color 0.15s', background: currentIndex === idx ? `rgba(${accentColor || '216, 177, 58'}, 0.10)` : 'transparent' }}
             onMouseEnter={e => e.currentTarget.style.background = currentIndex === idx ? `rgba(${accentColor || '216, 177, 58'}, 0.16)` : 'var(--bg-2)'}
@@ -318,7 +330,19 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
               ) : (
                 <div style={{ fontWeight: 600, fontSize: 14, color: currentIndex === idx ? 'var(--black)' : 'var(--gray-1)' }}>{song.title}</div>
               )}
-              <div style={{ fontSize: 12, color: 'var(--gray-3)', marginTop: 2 }}>{song.mixtape_name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--gray-3)', marginTop: 2 }}>
+                {song.mixtape_name}
+                {Array.isArray(song.tracklist) && song.tracklist.length > 0 && (
+                  <button
+                    onClick={e => { e.stopPropagation(); setExpandedId(expandedId === song.id ? null : song.id) }}
+                    style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: expandedId === song.id ? 'var(--gold)' : 'var(--gray-3)', padding: '1px 10px', fontSize: 10, fontFamily: 'var(--mono)', letterSpacing: '0.06em', cursor: 'pointer', transition: 'color 0.15s, border-color 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--gold)'; e.currentTarget.style.borderColor = 'var(--gold)' }}
+                    onMouseLeave={e => { if (expandedId !== song.id) { e.currentTarget.style.color = 'var(--gray-3)'; e.currentTarget.style.borderColor = 'var(--border-strong)' } }}
+                  >
+                    {song.tracklist.length} SONGS {expandedId === song.id ? '▴' : '▾'}
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {editingId === song.id ? (
@@ -341,6 +365,17 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
               )}
             </div>
           </div>
+          {expandedId === song.id && Array.isArray(song.tracklist) && (
+            <div style={{ padding: '10px 40px 20px 96px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
+              {song.tracklist.map((t, i) => (
+                <div key={i} style={{ display: 'flex', gap: 12, padding: '3px 0', fontSize: 13, color: 'var(--gray-2)', lineHeight: 1.5 }}>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--gray-4)', minWidth: 20, paddingTop: 2 }}>{String(i + 1).padStart(2, '0')}</span>
+                  {t}
+                </div>
+              ))}
+            </div>
+          )}
+          </Fragment>
         ))}
       </div>
     </div>
