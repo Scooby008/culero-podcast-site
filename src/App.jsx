@@ -41,6 +41,7 @@ function savePosition(id, t) {
 export default function App() {
   const audioRef = useRef(null)
   const pendingSeekRef = useRef(null)
+  const scrubbingRef = useRef(false)
   const lastPosSaveRef = useRef(0)
   const [activeTab, setActiveTab] = useState('intro')
   const [songs, setSongs] = useState([])
@@ -98,6 +99,17 @@ export default function App() {
     if (isPlaying) a.pause()
     else if (a.src && nowPlaying) a.play()
     else if (songs.length) playSong(0)
+  }
+
+  function scrubTo(e) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
+    const a = audioRef.current
+    if (a && a.duration) {
+      a.currentTime = pct * a.duration
+      setProgress(pct * 100)
+      setCurrentTime(formatTime(a.currentTime))
+    }
   }
 
   function seekBy(delta) {
@@ -230,14 +242,24 @@ export default function App() {
           </div>
           {/* Row 2: progress bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ flex: 1, height: 2, background: 'var(--border)', borderRadius: 1, cursor: 'pointer' }}
-              onClick={e => {
-                const rect = e.currentTarget.getBoundingClientRect()
-                const pct = (e.clientX - rect.left) / rect.width
-                if (audioRef.current && audioRef.current.duration) audioRef.current.currentTime = pct * audioRef.current.duration
+            <div style={{ flex: 1, padding: '10px 0', cursor: 'pointer', touchAction: 'none' }}
+              onPointerDown={e => {
+                e.preventDefault()
+                e.currentTarget.setPointerCapture(e.pointerId)
+                scrubbingRef.current = true
+                scrubTo(e)
               }}
+              onPointerMove={e => { if (scrubbingRef.current) scrubTo(e) }}
+              onPointerUp={e => {
+                scrubbingRef.current = false
+                e.currentTarget.releasePointerCapture(e.pointerId)
+              }}
+              onPointerCancel={() => { scrubbingRef.current = false }}
             >
-              <div style={{ width: progress + '%', height: '100%', background: accentColor ? `rgb(${accentColor})` : 'var(--gold)', borderRadius: 1, transition: 'width 0.1s, background 0.4s' }} />
+              <div style={{ position: 'relative', height: 3, background: 'var(--border)', borderRadius: 2 }}>
+                <div style={{ width: progress + '%', height: '100%', background: accentColor ? `rgb(${accentColor})` : 'var(--gold)', borderRadius: 2, transition: scrubbingRef.current ? 'none' : 'width 0.1s, background 0.4s' }} />
+                <div style={{ position: 'absolute', left: progress + '%', top: '50%', transform: 'translate(-50%, -50%)', width: 13, height: 13, borderRadius: '50%', background: accentColor ? `rgb(${accentColor})` : 'var(--gold)', boxShadow: '0 1px 6px rgba(0,0,0,0.5)', pointerEvents: 'none', transition: 'background 0.4s' }} />
+              </div>
             </div>
             <div style={{ fontSize: 12, color: 'var(--gray-3)', fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--mono)', flexShrink: 0 }}>{currentTime}</div>
           </div>
