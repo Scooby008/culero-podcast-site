@@ -6,16 +6,21 @@ import Intro from './pages/Intro'
 import NewReleases from './pages/NewReleases'
 import Radio from './pages/Radio'
 import Comments from './pages/Comments'
+import Songs from './pages/Songs'
+import About from './pages/About'
 import { extractDominantColor } from './lib/color'
+import { getSupabase } from './lib/supabase'
 
 export { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabase'
 export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
 const TABS = [
   { id: 'intro', label: 'Listen' },
+  { id: 'songs', label: 'Songs' },
   { id: 'radio', label: 'Radio' },
   { id: 'new-releases', label: 'New Releases' },
   { id: 'comments', label: 'Comments' },
+  { id: 'about', label: 'About' },
 ]
 
 const headerStyle = {
@@ -54,6 +59,16 @@ export default function App() {
   const [accentColor, setAccentColor] = useState(null)
   const [listenUnlocked, setListenUnlocked] = useState(() => sessionStorage.getItem('culero_access') === 'true')
   const [showTracklist, setShowTracklist] = useState(false)
+
+  useEffect(() => { loadSongs() }, [])
+
+  async function loadSongs() {
+    const sb = await getSupabase()
+    const { data, error } = await sb.from('songs').select('*')
+      .order('track_number', { ascending: true, nullsFirst: false })
+      .order('title', { ascending: true })
+    if (!error) setSongs(data || [])
+  }
 
   function formatTime(s) {
     const m = Math.floor(s / 60)
@@ -194,7 +209,7 @@ export default function App() {
 
       {activeTab === 'intro' && (
         <Intro
-          songs={songs} setSongs={setSongs}
+          songs={songs} loadSongs={loadSongs}
           currentIndex={currentIndex}
           isPlaying={isPlaying}
           accentColor={accentColor}
@@ -202,7 +217,9 @@ export default function App() {
           listenUnlocked={listenUnlocked} setListenUnlocked={setListenUnlocked}
         />
       )}
+      {activeTab === 'songs' && <Songs songs={songs} playSong={playSong} />}
       {activeTab === 'new-releases' && <NewReleases songs={songs} playSong={playSong} setActiveTab={setActiveTab} />}
+      {activeTab === 'about' && <About songs={songs} setActiveTab={setActiveTab} />}
       {activeTab === 'radio' && <Radio />}
       {activeTab === 'comments' && <Comments />}
 

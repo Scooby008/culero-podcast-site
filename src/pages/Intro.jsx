@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { R2_URL } from '../App'
 import { getSupabase } from '../lib/supabase'
 import RecordLogo from '../components/RecordLogo'
@@ -8,7 +8,7 @@ const ACCESS_PASSWORD = 'Enjoy'
 const MAX_UPLOAD_MB = 150
 const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
-export default function Intro({ songs, setSongs, currentIndex, isPlaying, accentColor, playSong, listenUnlocked, setListenUnlocked }) {
+export default function Intro({ songs, loadSongs, currentIndex, isPlaying, accentColor, playSong, listenUnlocked, setListenUnlocked }) {
   const [pwInput, setPwInput] = useState('')
   const [pwError, setPwError] = useState('')
   const [upMixtape, setUpMixtape] = useState('')
@@ -35,16 +35,6 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
       setPwError('Incorrect password.')
       setPwInput('')
     }
-  }
-
-  useEffect(() => { loadSongs() }, [])
-
-  async function loadSongs() {
-    const sb = await getSupabase()
-    const { data, error } = await sb.from('songs').select('*')
-      .order('track_number', { ascending: true, nullsFirst: false })
-      .order('title', { ascending: true })
-    if (!error) setSongs(data || [])
   }
 
   function startEdit(e, song) {
