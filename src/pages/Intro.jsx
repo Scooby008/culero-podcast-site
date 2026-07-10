@@ -42,8 +42,8 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
   async function loadSongs() {
     const sb = await getSupabase()
     const { data, error } = await sb.from('songs').select('*')
-      .order('mixtape_name', { ascending: true })
-      .order('track_number', { ascending: true })
+      .order('track_number', { ascending: true, nullsFirst: false })
+      .order('title', { ascending: true })
     if (!error) setSongs(data || [])
   }
 
