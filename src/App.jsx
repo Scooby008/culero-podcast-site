@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './index.css'
 import RecordLogo from './components/RecordLogo'
 import Equalizer from './components/Equalizer'
@@ -26,8 +26,21 @@ const headerStyle = {
   position: 'sticky', top: 0, zIndex: 100,
 }
 
+const POS_KEY = 'culero_positions'
+function loadPositions() {
+  try { return JSON.parse(localStorage.getItem(POS_KEY)) || {} } catch { return {} }
+}
+function savePosition(id, t) {
+  const p = loadPositions()
+  if (t == null) delete p[id]
+  else p[id] = Math.floor(t)
+  localStorage.setItem(POS_KEY, JSON.stringify(p))
+}
+
 export default function App() {
   const audioRef = useRef(null)
+  const pendingSeekRef = useRef(null)
+  const lastPosSaveRef = useRef(0)
   const [activeTab, setActiveTab] = useState('intro')
   const [songs, setSongs] = useState([])
   const [currentIndex, setCurrentIndex] = useState(-1)
@@ -50,6 +63,9 @@ export default function App() {
     if (index < 0 || index >= songs.length) return
     setCurrentIndex(index)
     const song = songs[index]
+    const saved = loadPositions()[song.id]
+    pendingSeekRef.current = saved && saved > 10 ? saved : null
+    lastPosSaveRef.current = 0
     audioRef.current.src = song.file_url
     audioRef.current.play()
     setNowPlaying(`${song.mixtape_name} — ${song.title}`)
@@ -74,6 +90,58 @@ export default function App() {
     setNowPlayingCover(null)
     setAccentColor(null)
   }
+
+  function togglePlay() {
+    const a = audioRef.current
+    if (!a) return
+    if (isPlaying) a.pause()
+    else if (a.src && nowPlaying) a.play()
+    else if (songs.length) playSong(0)
+  }
+
+  function seekBy(delta) {
+    const a = audioRef.current
+    if (a && a.duration) a.currentTime = Math.min(Math.max(0, a.currentTime + delta), a.duration)
+  }
+
+  // Keyboard shortcuts: space = play/pause, arrows = seek 15s
+  useEffect(() => {
+    if (!listenUnlocked) return
+    const onKey = e => {
+      const tag = e.target.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return
+      if (e.code === 'Space') { e.preventDefault(); togglePlay() }
+      else if (e.code === 'ArrowLeft') seekBy(-15)
+      else if (e.code === 'ArrowRight') seekBy(15)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
+  // Media Session API: lock-screen / hardware-key controls
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return
+    const ms = navigator.mediaSession
+    const song = songs[currentIndex]
+    if (song) {
+      ms.metadata = new MediaMetadata({
+        title: song.title,
+        artist: 'Culero Podcast',
+        album: song.mixtape_name || '',
+        artwork: [{ src: song.cover_url || '/og-cover.png', sizes: '512x512', type: 'image/png' }],
+      })
+    }
+    ms.playbackState = isPlaying ? 'playing' : 'paused'
+    ms.setActionHandler('play', () => togglePlay())
+    ms.setActionHandler('pause', () => togglePlay())
+    ms.setActionHandler('previoustrack', () => playSong(currentIndex - 1))
+    ms.setActionHandler('nexttrack', () => playSong(currentIndex + 1))
+    ms.setActionHandler('seekbackward', () => seekBy(-15))
+    ms.setActionHandler('seekforward', () => seekBy(15))
+    try {
+      ms.setActionHandler('seekto', d => { if (audioRef.current && d.seekTime != null) audioRef.current.currentTime = d.seekTime })
+    } catch { /* not supported everywhere */ }
+  })
 
   const playerVisible = listenUnlocked
 
@@ -150,10 +218,16 @@ export default function App() {
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nowPlaying || 'Pick a track to begin'}</div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 16 }}>
-              <button onClick={() => playSong(currentIndex - 1)} title="Previous" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏮</button>
-              <button onClick={() => playSong(currentIndex + 1)} title="Next" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏭</button>
-              <button onClick={stopSong} style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: 'var(--bg)', padding: '6px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em' }}>■ Stop</button>
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0, marginLeft: 16, alignItems: 'center' }}>
+              <button onClick={() => playSong(currentIndex - 1)} title="Previous track" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏮</button>
+              <button onClick={() => seekBy(-15)} title="Back 15 seconds (←)" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700 }}>−15</button>
+              <button onClick={togglePlay} title={isPlaying ? 'Pause (space)' : 'Play (space)'} style={{ background: accentColor ? `rgb(${accentColor})` : 'var(--gold)', border: 'none', borderRadius: '50%', color: 'var(--bg)', width: 38, height: 38, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.4s, transform 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >{isPlaying ? '❚❚' : '▶'}</button>
+              <button onClick={() => seekBy(15)} title="Forward 15 seconds (→)" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 700 }}>+15</button>
+              <button onClick={() => playSong(currentIndex + 1)} title="Next track" style={{ background: 'none', border: '1px solid var(--border-strong)', borderRadius: '999px', color: 'var(--gray-2)', padding: '6px 10px', fontSize: 12 }}>⏭</button>
+              <button onClick={stopSong} title="Stop" style={{ background: 'var(--black)', border: 'none', borderRadius: '999px', color: 'var(--bg)', padding: '6px 16px', fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', marginLeft: 4 }}>■ Stop</button>
             </div>
           </div>
           {/* Row 2: progress bar */}
@@ -175,12 +249,29 @@ export default function App() {
       <audio ref={audioRef} style={{ display: 'none' }}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        onEnded={() => { setIsPlaying(false); playSong(currentIndex + 1) }}
+        onLoadedMetadata={() => {
+          const a = audioRef.current
+          if (a && pendingSeekRef.current != null) {
+            if (pendingSeekRef.current < a.duration - 10) a.currentTime = pendingSeekRef.current
+            pendingSeekRef.current = null
+          }
+        }}
+        onEnded={() => {
+          setIsPlaying(false)
+          const song = songs[currentIndex]
+          if (song) savePosition(song.id, null) // finished — start fresh next time
+          playSong(currentIndex + 1)
+        }}
         onTimeUpdate={() => {
           if (!audioRef.current) return
           const { currentTime: ct, duration } = audioRef.current
           if (duration) setProgress((ct / duration) * 100)
           setCurrentTime(formatTime(ct))
+          const song = songs[currentIndex]
+          if (song && Math.abs(ct - lastPosSaveRef.current) > 3) {
+            lastPosSaveRef.current = ct
+            savePosition(song.id, ct)
+          }
         }}
       />
     </div>

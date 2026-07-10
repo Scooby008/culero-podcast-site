@@ -28,5 +28,6 @@ Secrets are no longer in the client code. Set these in Netlify → Site configur
 | `R2_SECRET_ACCESS_KEY` | R2 API token secret |
 | `R2_BUCKET` | `culero-podcast-audio` |
 | `R2_PUBLIC_URL` | `https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project settings → API keys → `service_role` (used only by `/api/delete-song`) |
 
 Uploads flow: browser → `/api/presign` (checks password, returns 10-minute presigned URL) → browser PUTs the file directly to R2.

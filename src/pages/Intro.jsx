@@ -78,6 +78,25 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
     }
   }
 
+  async function deleteSong(e, song) {
+    e.stopPropagation()
+    if (!window.confirm(`Delete "${song.title}" from the tracklist? This can't be undone.`)) return
+    try {
+      const res = await fetch('/api/delete-song', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-site-password': sessionStorage.getItem('culero_pw') || '',
+        },
+        body: JSON.stringify({ id: song.id }),
+      })
+      if (!res.ok) throw new Error('status ' + res.status)
+      loadSongs()
+    } catch (err) {
+      window.alert('Could not delete track (' + err.message + ')')
+    }
+  }
+
   async function uploadToR2(file, folder) {
     const res = await fetch('/api/presign', {
       method: 'POST',
@@ -320,6 +339,10 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
               ) : (
                 <>
                   <button onClick={e => startEdit(e, song)} title="Edit track name" style={{ background: 'none', border: 'none', color: 'var(--gray-3)', fontSize: 13, cursor: 'pointer', padding: 2 }}>✎</button>
+                  <button onClick={e => deleteSong(e, song)} title="Delete track" style={{ background: 'none', border: 'none', color: 'var(--gray-3)', fontSize: 13, cursor: 'pointer', padding: 2, transition: 'color 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--coral)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--gray-3)'}
+                  >🗑</button>
                   {currentIndex === idx && isPlaying
                     ? <Equalizer color={accentColor ? `rgb(${accentColor})` : 'var(--gold)'} active width={13} height={12} />
                     : <span style={{ fontSize: 13, color: 'var(--gray-1)' }}>›</span>
