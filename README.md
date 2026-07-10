@@ -16,18 +16,15 @@ The React Compiler is not enabled on this template because of its impact on dev 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
 
 
-## Upload / password configuration
+## Optional: track delete configuration
 
-Secrets are no longer in the client code. Set these in Netlify → Site configuration → Environment variables:
+The password and uploads work with no configuration. Only the tracklist delete
+button (trash icon) uses a Netlify function, since the database blocks public
+deletes. To enable it, set in Netlify -> Environment variables:
 
 | Variable | Value |
 |---|---|
-| `SITE_PASSWORD` | The members-only gate password |
-| `R2_ACCOUNT_ID` | Cloudflare account ID |
-| `R2_ACCESS_KEY_ID` | R2 API token key ID (rotate the old one first) |
-| `R2_SECRET_ACCESS_KEY` | R2 API token secret |
-| `R2_BUCKET` | `culero-podcast-audio` |
-| `R2_PUBLIC_URL` | `https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project settings → API keys → `service_role` (used only by `/api/delete-song`) |
+| `SITE_PASSWORD` | Must match the site password (`Enjoy`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase -> Project settings -> API keys -> `service_role` |
 
-Uploads flow: browser → `/api/presign` (checks password, returns 10-minute presigned URL) → browser PUTs the file directly to R2.
+Until these are set, the delete button shows an error and everything else works normally.

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { R2_URL } from '../App'
 import { getSupabase } from '../lib/supabase'
 import RecordLogo from '../components/RecordLogo'
 import Equalizer from '../components/Equalizer'
 
+const ACCESS_PASSWORD = 'Enjoy'
 const MAX_UPLOAD_MB = 150
 const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
@@ -21,25 +23,15 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
   const [editingId, setEditingId] = useState(null)
   const [editValue, setEditValue] = useState('')
 
-  async function handleUnlock() {
-    try {
-      const res = await fetch('/api/unlock', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwInput }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (data.ok) {
-        sessionStorage.setItem('culero_access', 'true')
-        sessionStorage.setItem('culero_pw', pwInput)
-        setListenUnlocked(true)
-        setPwError('')
-      } else {
-        setPwError('Incorrect password.')
-        setPwInput('')
-      }
-    } catch {
-      setPwError('Could not verify password — try again.')
+  function handleUnlock() {
+    if (pwInput === ACCESS_PASSWORD) {
+      sessionStorage.setItem('culero_access', 'true')
+      sessionStorage.setItem('culero_pw', pwInput)
+      setListenUnlocked(true)
+      setPwError('')
+    } else {
+      setPwError('Incorrect password.')
+      setPwInput('')
     }
   }
 
@@ -98,19 +90,17 @@ export default function Intro({ songs, setSongs, currentIndex, isPlaying, accent
   }
 
   async function uploadToR2(file, folder) {
-    const res = await fetch('/api/presign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-site-password': sessionStorage.getItem('culero_pw') || '',
-      },
-      body: JSON.stringify({ filename: file.name, folder }),
-    })
-    if (!res.ok) throw new Error('Could not authorize upload (' + res.status + ')')
-    const { uploadUrl, publicUrl } = await res.json()
-    const put = await fetch(uploadUrl, { method: 'PUT', body: file })
-    if (!put.ok) throw new Error('R2 upload failed: ' + put.status)
-    return publicUrl
+    const { AwsClient } = await import('https://esm.sh/aws4fetch')
+    const R2_ACCOUNT = '545647a881b8447fba2e3b7f6869e73a'
+    const R2_ACCESS_KEY = 'ae4e3d2beaa0fcf7982dbf4a67506099'
+    const R2_SECRET_KEY = '84522cb873af3507ad8c53c23cf879b9c46f0097eabde54310cb48298e93d17c'
+    const BUCKET = 'culero-podcast-audio'
+    const aws = new AwsClient({ accessKeyId: R2_ACCESS_KEY, secretAccessKey: R2_SECRET_KEY })
+    const filePath = folder + '/' + Date.now() + '_' + file.name
+    const url = 'https://' + R2_ACCOUNT + '.r2.cloudflarestorage.com/' + BUCKET + '/' + filePath
+    const res = await aws.fetch(url, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file })
+    if (!res.ok) throw new Error('R2 upload failed: ' + res.status)
+    return R2_URL + '/' + filePath
   }
 
   async function handleUpload() {
