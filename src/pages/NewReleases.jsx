@@ -1,18 +1,38 @@
 import { useEffect, useState } from 'react'
 import RecordLogo from '../components/RecordLogo'
 import { hashColorRgb } from '../lib/color'
+import { episodeName, toTitleCase } from '../lib/episode'
+import { cityArtFor } from '../lib/cityArt'
 
 const GENRES = [
   { id: 18, name: 'Hip Hop' }, { id: 21, name: 'Rock' }, { id: 14, name: 'Pop' },
   { id: 7, name: 'Electronic' }, { id: 17, name: 'EDM' },
 ]
 
+// The public iTunes RSS feed occasionally includes garbled/spam entries —
+// walls of Unicode combining marks ("zalgo" text), control characters, etc.
+// Those break layout and screen readers, so we screen them out before display.
+function isCleanText(str) {
+  if (!str || typeof str !== 'string') return false
+  const combiningMarks = (str.match(/[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff]/g) || []).length
+  if (combiningMarks > 2) return false
+  // eslint-disable-next-line no-control-regex -- intentionally matching control chars to catch corrupted feed entries
+  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(str)) return false
+  return true
+}
+
 export default function NewReleases({ songs, playSong, setActiveTab }) {
   const [releases, setReleases] = useState([])
   const [loading, setLoading] = useState(true)
   const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 2)
-  const recentUploads = songs.filter(s => new Date(s.created_at) >= cutoff)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  // NOTE: created_at reflects when a row was imported into Supabase, not the
+  // episode's real release order (the whole catalog was bulk-imported at
+  // once, so every row has ~the same timestamp). Episode/track number is the
+  // only field that reliably reflects chronology, so we sort by that instead.
+  const recentUploads = [...songs]
+    .filter(s => s.track_number != null)
+    .sort((a, b) => b.track_number - a.track_number)
+    .slice(0, 12)
 
   useEffect(() => { loadReleases() }, [])
 
@@ -37,6 +57,7 @@ export default function NewReleases({ songs, playSong, setActiveTab }) {
       const seen = new Set()
       const all = results.flat().filter(r => {
         if (!r.releaseDate || new Date(r.releaseDate) < cutoff || seen.has(r.id)) return false
+        if (!isCleanText(r.name) || !isCleanText(r.artist)) return false
         seen.add(r.id); return true
       })
       all.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate))
@@ -88,23 +109,20 @@ export default function NewReleases({ songs, playSong, setActiveTab }) {
                 <div style={{ position: 'relative', aspectRatio: '1/1', background: 'var(--bg-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {song.cover_url
                     ? <img src={song.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }} />
+                    : cityArtFor(episodeName(song.title, song.track_number))
+                    ? <img src={cityArtFor(episodeName(song.title, song.track_number))} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.35s ease' }} />
                     : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(140deg, rgba(${hashColorRgb(song.mixtape_name || song.title)}, 0.28), rgba(0,0,0,0.55)), var(--bg-2)` }}>
                         <RecordLogo size={72} />
                       </div>}
                   <div className="play-overlay" style={{ position: 'absolute', right: 10, bottom: 10, width: 28, height: 28, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#1a1400', opacity: 0, transition: 'opacity 0.2s' }}>▶</div>
                 </div>
                 <div style={{ padding: '12px 16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--mono)' }}>
-                    <span style={{ color: 'var(--gold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {song.title?.trim().toLowerCase() === song.mixtape_name?.trim().toLowerCase()
-                        ? (song.track_number ? `EP ${song.track_number}` : 'Episode')
-                        : song.mixtape_name}
-                    </span>
-                    <span style={{ color: 'var(--gray-3)', flexShrink: 0 }}>
-                      {new Date(song.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--mono)' }}>
+                    <span style={{ color: 'var(--gold)' }}>
+                      {song.track_number ? `EP ${song.track_number}` : 'Episode'}
                     </span>
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)' }}>{song.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--black)' }}>{toTitleCase(episodeName(song.title, song.track_number))}</div>
                 </div>
               </div>
             ))}

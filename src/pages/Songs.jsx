@@ -1,10 +1,5 @@
 import { useMemo, useState } from 'react'
-
-// Strip "Culero Podcast NN" prefix to get the episode's place-name
-function episodeName(title, trackNumber) {
-  const name = (title || '').replace(/culero\s+podc?x?ast\s*\d*\s*[-–.·]*\s*/i, '').trim()
-  return name || `Episode ${trackNumber ?? '?'}`
-}
+import { episodeName } from '../lib/episode'
 
 export default function Songs({ songs, playSong }) {
   const [query, setQuery] = useState('')

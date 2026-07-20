@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import './index.css'
 import RecordLogo from './components/RecordLogo'
 import Equalizer from './components/Equalizer'
@@ -10,12 +10,14 @@ import Songs from './pages/Songs'
 import About from './pages/About'
 import { extractDominantColor } from './lib/color'
 import { getSupabase } from './lib/supabase'
+import { episodeName } from './lib/episode'
+import { cityArtFor } from './lib/cityArt'
 
 export { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabase'
 export const R2_URL = "https://pub-07b5383ddfb74164b7207ad056917cc8.r2.dev"
 
 const TABS = [
-  { id: 'intro', label: 'Listen' },
+  { id: 'intro', label: 'Listen', gated: true },
   { id: 'songs', label: 'Songs' },
   { id: 'radio', label: 'Radio' },
   { id: 'new-releases', label: 'New Releases' },
@@ -88,10 +90,11 @@ export default function App() {
     audioRef.current.play()
     setNowPlaying(`${song.mixtape_name} — ${song.title}`)
     setIsPlaying(true)
-    setNowPlayingCover(song.cover_url || null)
+    const fallbackCover = song.cover_url ? null : cityArtFor(episodeName(song.title, song.track_number))
+    setNowPlayingCover(song.cover_url || fallbackCover)
     setAccentColor(null)
-    if (song.cover_url) {
-      extractDominantColor(song.cover_url).then(rgb => setAccentColor(rgb))
+    if (song.cover_url || fallbackCover) {
+      extractDominantColor(song.cover_url || fallbackCover).then(rgb => setAccentColor(rgb))
     }
   }
 
@@ -185,24 +188,36 @@ export default function App() {
             CULERO PODCAST
           </span>
         </div>
-        <nav style={{ display: 'flex', gap: 4 }}>
-          {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-              background: activeTab === tab.id ? 'var(--gold)' : 'transparent',
-              color: activeTab === tab.id ? 'var(--bg)' : 'var(--gray-2)',
-              border: 'none',
-              borderRadius: '999px',
-              padding: '7px 16px',
-              fontSize: 13,
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              letterSpacing: '0.01em',
-            }}
-            onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'var(--black)' }}
-            onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'var(--gray-2)' }}
-            >
-              {tab.label}
-            </button>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {TABS.map((tab, i) => (
+            <Fragment key={tab.id}>
+              <button onClick={() => setActiveTab(tab.id)} title={tab.gated && !listenUnlocked ? 'Password required' : undefined} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: activeTab === tab.id ? 'var(--gold)' : 'transparent',
+                color: activeTab === tab.id ? 'var(--bg)' : 'var(--gray-2)',
+                border: 'none',
+                borderRadius: '999px',
+                padding: '7px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                letterSpacing: '0.01em',
+              }}
+              onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'var(--black)' }}
+              onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'var(--gray-2)' }}
+              >
+                {tab.gated && (
+                  <span style={{ fontSize: 11, opacity: activeTab === tab.id ? 0.8 : 0.6 }}>
+                    {listenUnlocked ? '♪' : '🔒'}
+                  </span>
+                )}
+                {tab.label}
+              </button>
+              {/* Divider after the gated tab — visually splits "the locked player" from the open browsing tabs */}
+              {i === 0 && <span style={{ width: 1, height: 18, background: 'var(--border-strong)', margin: '0 6px' }} />}
+            </Fragment>
           ))}
         </nav>
       </header>

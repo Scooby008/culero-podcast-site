@@ -41,7 +41,7 @@ export default function Radio() {
       <div style={{ padding: '80px 40px 64px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', color: 'var(--gray-3)', textTransform: 'uppercase', marginBottom: 20, opacity: 0, animation: 'fadeUp 0.6s 0.1s forwards', fontFamily: 'var(--mono)' }}>Live radio</div>
         <h1 style={{ fontSize: 64, fontWeight: 900, letterSpacing: '-3px', lineHeight: 0.92, color: 'var(--black)', marginBottom: 16, opacity: 0, animation: 'fadeUp 0.6s 0.25s forwards' }}>Tune in.</h1>
-        <p style={{ fontSize: 16, color: 'var(--gray-2)', opacity: 0, animation: 'fadeUp 0.6s 0.4s forwards' }}>Four stations. One click. No filler.</p>
+        <p style={{ fontSize: 16, color: 'var(--gray-2)', opacity: 0, animation: 'fadeUp 0.6s 0.4s forwards' }}>{STATIONS.length} stations. One click. No filler.</p>
       </div>
 
       {playing && (
